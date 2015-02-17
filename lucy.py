@@ -35,7 +35,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
 
   def chan_msg(self, c, message):
     c.privmsg(self.channel, message)
-    self.log(self.get_nickname(), message)
+    self.log(c.get_nickname(), message)
 
   def search(self, c, e):
     message = " ".join(e.arguments)
