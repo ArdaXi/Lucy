@@ -47,7 +47,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     message = strip_pattern.sub('', " ".join(e.arguments))
     try:
       result = self.es.search("body:({})".format(message), index=self.index)
-      threshold = len(e.arguments) - 0.1
+      threshold = message.count(" ") + 0.9
       for hit in result["hits"]["hits"]:
         score, body = hit["_score"], hit["_source"]["body"]
         if score < 1.0:
