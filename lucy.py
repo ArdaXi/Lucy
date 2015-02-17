@@ -49,10 +49,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
           return
       self.chan_msg(c, body)
     except:
-      e = sys.exc_info()[0]
+      e, msg = sys.exc_info()[:2]
       if e == IndexError:
         return
-      self.chan_msg(c, e.__name__)
+      print "{}: {}".format(e, msg)
 
   def log(self, nick, message):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
