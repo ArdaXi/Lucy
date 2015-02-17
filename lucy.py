@@ -46,7 +46,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
       c.privmsg(self.channel, body)
     except IndexError:
       pass
-    print json.dumps(result)
 
   def log(self, event):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
