@@ -38,9 +38,11 @@ class Lucy(irc.bot.SingleServerIRCBot):
     result = self.es.search("body:({})".format(message), index=self.index)
     try:
       hit = result["hits"]["hits"][0]
-      if hit["_score"] < 1.0:
+      if hit["_score"] < 1.0 or hit["_score"] > len(message) - 0.1:
         return
       body = hit["_source"]["body"]
+      if body == message:
+          return
       c.privmsg(self.channel, body)
     except KeyError:
       pass
