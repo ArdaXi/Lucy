@@ -47,14 +47,14 @@ class Lucy(irc.bot.SingleServerIRCBot):
     message = strip_pattern.sub('', " ".join(e.arguments))
     try:
       result = self.es.search("body:({})".format(message), index=self.index)
-      hit = result["hits"]["hits"][0]
-      score, body = hit["_score"], hit["_source"]["body"]
-      if score < 1.0 or score > len(e.arguments) - 0.1:
-        self.logger.info("Not matched: '{}' because score is {}".format(body, score))
-        return
-      if body == message:
+      for hit in result["hits"]["hits"]
+        score, body = hit["_score"], hit["_source"]["body"]
+        if score < 1.0:
           return
-      self.chan_msg(c, body)
+        if score > len(e.arguments) - 0.1:
+          continue
+        self.chan_msg(c, body)
+        return
     except:
       e, msg = sys.exc_info()[:2]
       if e == IndexError:
