@@ -4,6 +4,9 @@ import pyelasticsearch
 from datetime import datetime
 import random
 import sys
+import re
+
+strip_pattern = re.compile('[\W_]+', re.UNICODE)
 
 class Lucy(irc.bot.SingleServerIRCBot):
   def __init__(self, config):
@@ -38,7 +41,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.log(c.get_nickname(), message)
 
   def search(self, c, e):
-    message = " ".join(e.arguments)
+    message = strip_pattern.sub('', " ".join(e.arguments))
     try:
       result = self.es.search("body:({})".format(message), index=self.index)
       hit = result["hits"]["hits"][0]
