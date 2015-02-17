@@ -7,7 +7,7 @@ import sys
 import re
 import logging
 
-strip_pattern = re.compile('[\W_]+', re.UNICODE)
+strip_pattern = re.compile('[^\w ]+', re.UNICODE)
 logging.basicConfig(level=logging.INFO)
 
 class Lucy(irc.bot.SingleServerIRCBot):
