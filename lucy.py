@@ -6,6 +6,8 @@ import random
 import sys
 import re
 import logging
+from threading import Thread
+import time
 
 strip_pattern = re.compile('[^\w ]+', re.UNICODE)
 logging.basicConfig(level=logging.INFO)
@@ -31,7 +33,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
   def on_pubmsg(self, c, e):
     self.log(e.source.nick, " ".join(e.arguments))
     if(random.random() > 0.5):
-      self.search(c, e)
+      Thread(target=self.search, args=(c, e)).start()
 
   def on_join(self, c, e):
     pass
@@ -55,6 +57,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
         if score > threshold:
           self.logger.info("'{}' has score {}, threshold: {}".format(body, score, threshold))
           continue
+        time.sleep(body.count(" ") * 0.5 + 0.5)
         self.chan_msg(c, body)
         return
     except:
