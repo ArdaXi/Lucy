@@ -5,8 +5,10 @@ from datetime import datetime
 import random
 import sys
 import re
+import logging
 
 strip_pattern = re.compile('[\W_]+', re.UNICODE)
+logging.basicConfig(level=logging.INFO)
 
 class Lucy(irc.bot.SingleServerIRCBot):
   def __init__(self, config):
@@ -18,6 +20,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.index = config['index']
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
+    self.logger = logging.getLogger(__name__)
     
   def on_nicknameinuse(self, c, e):
     c.nick(c.get_nickname() + "_")
@@ -55,7 +58,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       e, msg = sys.exc_info()[:2]
       if e == IndexError:
         return
-      print "{}: {}".format(e, msg)
+      self.logger.exception("Failed ES")
 
   def log(self, nick, message):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
