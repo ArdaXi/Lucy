@@ -63,7 +63,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
         if score > threshold:
           self.logger.info("'{}' has score {}, threshold: {}".format(body, score, threshold))
           continue
-        if body in messages:
+        if strip_pattern.sub(' ', body) in messages:
           continue
         time.sleep(body.count(" ") * 0.5 + 0.5)
         self.chan_msg(c, body)
