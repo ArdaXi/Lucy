@@ -47,12 +47,12 @@ class Lucy(irc.bot.SingleServerIRCBot):
       body = hit["_source"]["body"]
       if body == message:
           return
-      c.privmsg(self.channel, body)
+      self.chan_msg(c, body)
     except:
       e = sys.exc_info()[0]
       if e == IndexError:
         return
-      c.privmsg(self.channel, e.__name__)
+      self.chan_msg(c, e.__name__)
 
   def log(self, nick, message):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
