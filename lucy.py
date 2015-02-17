@@ -14,7 +14,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.index = config['index']
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
-    print self.numid
     
   def on_nicknameinuse(self, c, e):
     c.nick(c.get_nickname() + "_")
