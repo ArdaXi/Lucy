@@ -3,6 +3,7 @@ import json
 import pyelasticsearch
 from datetime import datetime
 import random
+import sys
 
 class Lucy(irc.bot.SingleServerIRCBot):
   def __init__(self, config):
@@ -36,9 +37,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
     message = " ".join(e.arguments)
     try:
       result = self.es.search("body:({})".format(message), index=self.index)
-    except pyelasticsearch.exceptions.ElasticHttpError:
-      return
-    try:
       hit = result["hits"]["hits"][0]
       if hit["_score"] < 1.0 or hit["_score"] > len(message) - 0.1:
         return
@@ -46,8 +44,9 @@ class Lucy(irc.bot.SingleServerIRCBot):
       if body == message:
           return
       c.privmsg(self.channel, body)
-    except IndexError:
-      pass
+    except:
+      e = sys.exc_info()[0]
+      c.privmsg(self.channel, str(e))
 
   def log(self, event):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
