@@ -10,7 +10,7 @@ from threading import Thread
 import time
 from collections import deque
 
-strip_pattern = re.compile('[^\w ]+', re.UNICODE)
+strip_pattern = re.compile("[^\w ']+", re.UNICODE)
 logging.basicConfig(level=logging.INFO)
 
 class Lucy(irc.bot.SingleServerIRCBot):
