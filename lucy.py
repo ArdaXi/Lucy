@@ -21,6 +21,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nick, nick)
     self.channel = config['channel']
     self.index = config['index']
+    self.chance = config['chance']
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
     self.logger = logging.getLogger(__name__)
@@ -36,9 +37,9 @@ class Lucy(irc.bot.SingleServerIRCBot):
     message = " ".join(e.arguments)
     self.log(e.source.nick, message)
     self.queue.append(strip_pattern.sub(' ', message))
-    if(random.random() > 0.5):
+    if(random.random() < self.chance):
       Thread(target=self.search, args=(c, list(self.queue))).start()
-      self.queue.clear()
+      #self.queue.clear()
 
   def on_join(self, c, e):
     pass
