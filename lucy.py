@@ -44,7 +44,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       if body == message:
           return
       c.privmsg(self.channel, body)
-    except KeyError:
+    except IndexError:
       pass
     print json.dumps(result)
 
