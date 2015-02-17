@@ -48,9 +48,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
     try:
       result = self.es.search("body:({})".format(message), index=self.index)
       hit = result["hits"]["hits"][0]
-      if hit["_score"] < 1.0 or hit["_score"] > len(e.arguments) - 0.1:
+      score, body = hit["_score"], hit["_source"]["body"]
+      if score < 1.0 or score > len(e.arguments) - 0.1:
+        self.logger.info("Not matched: '{}' because score is {}".format(body, score))
         return
-      body = hit["_source"]["body"]
       if body == message:
           return
       self.chan_msg(c, body)
