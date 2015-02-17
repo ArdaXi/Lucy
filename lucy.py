@@ -46,6 +46,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
       c.privmsg(self.channel, body)
     except:
       e = sys.exc_info()[0]
+      if e == IndexError:
+        return
       c.privmsg(self.channel, str(e))
 
   def log(self, event):
