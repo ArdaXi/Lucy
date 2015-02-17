@@ -23,7 +23,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     c.join(self.channel)
 
   def on_pubmsg(self, c, e):
-    self.log(e)
+    self.log(e.source.nick, " ".join(event.arguments))
     if(random.random() > 0.5):
       self.search(c, e)
 
@@ -32,6 +32,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
 
   def on_nick(self, c, e):
     pass
+
+  def chan_msg(self, c, message):
+    c.privmsg(self.channel, message)
+    self.log(self.get_nickname(), message)
 
   def search(self, c, e):
     message = " ".join(e.arguments)
@@ -48,11 +52,11 @@ class Lucy(irc.bot.SingleServerIRCBot):
       e = sys.exc_info()[0]
       if e == IndexError:
         return
-      c.privmsg(self.channel, str(e))
+      c.privmsg(self.channel, e.__name__)
 
-  def log(self, event):
+  def log(self, nick, message):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
-           'nick': event.source.nick, 'body': " ".join(event.arguments)}
+           'nick': nick, 'body': message}
     self.es.index(self.index, "message", doc)
     self.numid += 1
 
