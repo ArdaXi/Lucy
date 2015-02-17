@@ -8,6 +8,7 @@ import re
 import logging
 from threading import Thread
 import time
+from collections import deque
 
 strip_pattern = re.compile('[^\w ]+', re.UNICODE)
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +24,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
     self.logger = logging.getLogger(__name__)
+    self.queue = deque(maxlen=10) #TODO: Make configurable
     
   def on_nicknameinuse(self, c, e):
     c.nick(c.get_nickname() + "_")
@@ -31,9 +33,12 @@ class Lucy(irc.bot.SingleServerIRCBot):
     c.join(self.channel)
 
   def on_pubmsg(self, c, e):
-    self.log(e.source.nick, " ".join(e.arguments))
+    message = " ".join(e.arguments)
+    self.log(e.source.nick, message)
+    self.queue.append(strip_pattern.sub(' ', message))
     if(random.random() > 0.5):
-      Thread(target=self.search, args=(c, e)).start()
+      Thread(target=self.search, args=(c, list(self.queue))).start()
+      self.queue.clear()
 
   def on_join(self, c, e):
     pass
@@ -45,11 +50,11 @@ class Lucy(irc.bot.SingleServerIRCBot):
     c.privmsg(self.channel, message)
     self.log(c.get_nickname(), message)
 
-  def search(self, c, e):
-    message = strip_pattern.sub(' ', " ".join(e.arguments))
+  def search(self, c, messages):
+    message = " ".join(messages)
     try:
       result = self.es.search("body:({})".format(message), index=self.index)
-      threshold = message.count(" ") + 0.9
+      threshold = message.count(" ") / len(messages) + 0.9
       for hit in result["hits"]["hits"]:
         score, body = hit["_score"], hit["_source"]["body"]
         if score < 1.0:
