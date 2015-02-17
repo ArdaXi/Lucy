@@ -23,7 +23,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     c.join(self.channel)
 
   def on_pubmsg(self, c, e):
-    self.log(e.source.nick, " ".join(event.arguments))
+    self.log(e.source.nick, " ".join(e.arguments))
     if(random.random() > 0.5):
       self.search(c, e)
 
