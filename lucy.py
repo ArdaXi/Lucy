@@ -34,7 +34,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
 
   def search(self, c, e):
     message = " ".join(e.arguments)
-    result = self.es.search("body:({})".format(message), index=self.index)
+    try:
+      result = self.es.search("body:({})".format(message), index=self.index)
+    except pyelasticsearch.exceptions.ElasticHttpError:
+      return
     try:
       hit = result["hits"]["hits"][0]
       if hit["_score"] < 1.0 or hit["_score"] > len(message) - 0.1:
