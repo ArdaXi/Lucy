@@ -44,7 +44,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.log(c.get_nickname(), message)
 
   def search(self, c, e):
-    message = strip_pattern.sub('', " ".join(e.arguments))
+    message = strip_pattern.sub(' ', " ".join(e.arguments))
     try:
       result = self.es.search("body:({})".format(message), index=self.index)
       threshold = message.count(" ") + 0.9
