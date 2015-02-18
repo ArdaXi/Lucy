@@ -38,7 +38,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
   def on_pubmsg(self, c, e):
     message = " ".join(e.arguments)
     self.log(e.source.nick, message)
-    self.queue.append(strip_pattern.sub(' ', message))
+    if e.source.nick not in self.ignored:
+      self.queue.append(strip_pattern.sub(' ', message))
     if len(self.queue) >= 5 and random.random() < self.chance:
       Thread(target=self.search, args=(c, list(self.queue))).start()
       self.queue.clear()
