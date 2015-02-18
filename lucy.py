@@ -61,7 +61,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
         score, body = hit["_score"], hit["_source"]["body"]
         if score < threshold:
           self.logger.info("'{}' has score {}, threshold: {}".format(body, score, threshold))
-          self.queue.appendleft(reversed(messages[len(self.queue):]))
+          self.queue.extendleft(reversed(messages[len(self.queue):]))
           return
     #    if score > threshold:
     #      self.logger.info("'{}' has score {}, threshold: {}".format(body, score, threshold))
