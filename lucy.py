@@ -52,7 +52,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.log(c.get_nickname(), message)
 
   def search(self, c, messages):
-    message = " ".join(messages)
+    message = " ".join(messages).encode("utf-8")
     try:
       result = self.es.search("body:({})".format(message), index=self.index)
       #threshold = message.count(" ") / len(messages) + 0.9
