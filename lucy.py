@@ -39,7 +39,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.queue.append(strip_pattern.sub(' ', message))
     if len(self.queue) >= 5 and random.random() < self.chance:
       Thread(target=self.search, args=(c, list(self.queue))).start()
-      #self.queue.clear()
+      self.queue.clear()
 
   def on_join(self, c, e):
     pass
