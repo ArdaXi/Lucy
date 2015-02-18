@@ -9,6 +9,7 @@ import logging
 from threading import Thread
 import time
 from collections import deque
+from datetime import datetime
 
 strip_pattern = re.compile("[^\w ']+", re.UNICODE)
 logging.basicConfig(level=logging.INFO)
@@ -58,9 +59,12 @@ class Lucy(irc.bot.SingleServerIRCBot):
       #threshold = message.count(" ") / len(messages) + 0.9
       threshold = 0.1
       for hit in result["hits"]["hits"]:
-        score, body = hit["_score"], hit["_source"]["body"]
+        score, source = hit["_score"], hit["_source"]
+        body, date = source["body"], source["date"]
         if score < threshold:
-          self.logger.info("'{}' has score {}, threshold: {}".format(body, score, threshold))
+          self.logger.info("'{}' has score {}, threshold: {}".format(body,
+                                                                     score,
+                                                                     threshold))
           self.queue.extendleft(reversed(messages[len(self.queue):]))
           return
 
@@ -68,6 +72,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
     #      self.logger.info("'{}' has score {}, threshold: {}".format(body, score, threshold))
     #      continue
         if strip_pattern.sub(' ', body) in messages:
+          continue
+        timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
+        delta = datetime.now - timestamp
+        if delta.total_seconds < 3600:
           continue
         self.logger.info("'{}' has score {}".format(body, score))
         time.sleep(body.count(" ") * 0.2 + 0.5)
