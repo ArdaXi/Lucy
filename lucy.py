@@ -59,8 +59,12 @@ class Lucy(irc.bot.SingleServerIRCBot):
     try:
       query = {"query":
                {"filtered": {"query": {"match": {"body": message}},
-                             "filter": {"not": {"terms":
-                                                 {"nick": self.ignored}}}}}}
+                             "filter": {"bool": {
+                                         "must_not": [
+                                          {"terms": {"nick": self.ignored}},
+                                          {"range": {"numid":
+                                                      {"gte": self.numid-1000}}
+                                          }]}}}}}
       result = self.es.search(query, index=self.index)
       #threshold = message.count(" ") / len(messages) + 0.9
       threshold = 0.1
