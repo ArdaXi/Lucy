@@ -23,6 +23,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.channel = config['channel']
     self.index = config['index']
     self.chance = config['chance']
+    self.ignored = config['ignored']
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
     self.logger = logging.getLogger(__name__)
@@ -55,7 +56,11 @@ class Lucy(irc.bot.SingleServerIRCBot):
   def search(self, c, messages):
     message = " ".join(messages).encode("utf-8")
     try:
-      result = self.es.search("body:({})".format(message), index=self.index)
+      query = {"query":
+               {"filtered": {"query": {"match": {"body": message}},
+                             "filter": {"not": {"terms":
+                                                 {"nick": self.ignored}}}}}}
+      result = self.es.search(query, index=self.index)
       #threshold = message.count(" ") / len(messages) + 0.9
       threshold = 0.1
       for hit in result["hits"]["hits"]:
