@@ -69,7 +69,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
         if strip_pattern.sub(' ', body) in messages:
           continue
         self.logger.info("'{}' has score {}".format(body, score))
-        time.sleep(body.count(" ") * 0.5 + 0.5)
+        time.sleep(body.count(" ") * 0.2 + 0.5)
         self.chan_msg(c, body)
         return
     except:
