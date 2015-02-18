@@ -72,7 +72,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     #      self.logger.info("'{}' has score {}, threshold: {}".format(body, score, threshold))
     #      continue
         timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
-        delta = datetime.now - timestamp
+        delta = datetime.now() - timestamp
         if delta.total_seconds < 3600:
           continue
         self.logger.info("'{}' has score {}".format(body, score))
