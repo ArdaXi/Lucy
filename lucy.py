@@ -73,7 +73,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     #      continue
         timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
         delta = datetime.now() - timestamp
-        if delta.total_seconds < 10800:
+        if delta.total_seconds() < 10800:
           continue
         self.logger.info("'{}' has score {}".format(body, score))
         time.sleep(body.count(" ") * 0.2 + 0.5)
