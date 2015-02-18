@@ -55,10 +55,12 @@ class Lucy(irc.bot.SingleServerIRCBot):
     message = " ".join(messages)
     try:
       result = self.es.search("body:({})".format(message), index=self.index)
-      threshold = message.count(" ") / len(messages) + 0.9
+      #threshold = message.count(" ") / len(messages) + 0.9
+      threshold = 0.3
       for hit in result["hits"]["hits"]:
         score, body = hit["_score"], hit["_source"]["body"]
-        if score < 0.3:
+        if score < threshold:
+          self.logger.info("'{}' has score {}, threshold: {}".format(body, score, threshold))
           return
     #    if score > threshold:
     #      self.logger.info("'{}' has score {}, threshold: {}".format(body, score, threshold))
