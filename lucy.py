@@ -71,8 +71,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
     #    if score > threshold:
     #      self.logger.info("'{}' has score {}, threshold: {}".format(body, score, threshold))
     #      continue
-        if strip_pattern.sub(' ', body) in messages:
-          continue
         timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
         delta = datetime.now - timestamp
         if delta.total_seconds < 3600:
