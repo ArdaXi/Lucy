@@ -58,7 +58,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
   def search(self, c, messages):
     message = " ".join(messages).encode("utf-8")
     try:
-      query = {"query":
+      query = {"_source": ["body", "date"],
+               "query":
                {"filtered": {"query": {"function_score": {"query": {"match": {"body": message}},
                                                           "gauss": {"numid": {"origin": 1,
                                                                               "offset": 1,
@@ -79,12 +80,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
           self.logger.info("'{}' has score {}, threshold: {}".format(body.encode("utf-8"),
                                                                      score,
                                                                      threshold))
-          self.queue.extendleft(reversed(messages[len(self.queue):]))
-          return
-
-    #    if score > threshold:
-    #      self.logger.info("'{}' has score {}, threshold: {}".format(body, score, threshold))
-    #      continue
+          break
         timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
         delta = datetime.now() - timestamp
         if delta.total_seconds() < 10800:
@@ -94,10 +90,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
         self.chan_msg(c, body)
         return
     except:
-      e, msg = sys.exc_info()[:2]
-      if e == IndexError:
-        return
       self.logger.exception("Failed ES")
+    self.queue.extendleft(reversed(messages[len(self.queue):]))
 
   def log(self, nick, message):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
