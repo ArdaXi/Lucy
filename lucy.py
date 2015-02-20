@@ -60,9 +60,9 @@ class Lucy(irc.bot.SingleServerIRCBot):
     try:
       query = {"query":
                {"filtered": {"query": {"function_score": {"query": {"match": {"body": message}},
-                                                          "exp": {"numid": {"origin": 1,
-                                                                            "offset": 1,
-                                                                            "scale": math.floor(self.numid/2)}}}},
+                                                          "gauss": {"numid": {"origin": 1,
+                                                                              "offset": 1,
+                                                                              "scale": math.floor(self.numid/2)}}}},
                              "filter": {"bool": {
                                          "must_not": [
                                           {"terms": {"nick": self.ignored}},
