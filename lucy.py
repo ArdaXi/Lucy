@@ -10,6 +10,7 @@ from threading import Thread
 import time
 from collections import deque
 from datetime import datetime
+import math
 
 strip_pattern = re.compile("[^\w ']+", re.UNICODE)
 logging.basicConfig(level=logging.INFO)
@@ -58,7 +59,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
     message = " ".join(messages).encode("utf-8")
     try:
       query = {"query":
-               {"filtered": {"query": {"match": {"body": message}},
+               {"filtered": {"query": {"function_score": {"query": {"match": {"body": message}},
+                                                          "exp": {"numid": {"origin": 1,
+                                                                            "offset": 1,
+                                                                            "scale": math.floor(self.numid/2)}}}},
                              "filter": {"bool": {
                                          "must_not": [
                                           {"terms": {"nick": self.ignored}},
