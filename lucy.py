@@ -107,16 +107,18 @@ class Lucy(irc.bot.SingleServerIRCBot):
 
   def usersearch(self, c, message):
     try:
-      query = {"query": {"match": {"body": message}}}
+      query = {"query": {"function_score": {"query": {"match": {"body": message}},
+                                            "random_score": {}}}}
       result = self.es.search(query, index=self.index, size=5)
       hits = result["hits"]["hits"]
-      self.chan_msg(c, "{} results, showing 5.".format(result["hits"]
-                                                              ["total"]))
+      self.chan_msg(c, "{} results, showing {}.".format(result["hits"]
+                                                              ["total"],
+                                                        len(hits)))
       for hit in result["hits"]["hits"]:
         score, source = hit["_score"], hit["_source"]
         body, date, nick = source["body"], source["date"], source["nick"]
         timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
-        msg = "{:.5} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
+        msg = "{:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
                                                           nick, body)
         self.chan_msg(c, msg)
     except:
