@@ -45,6 +45,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
     if e.source.nick not in self.ignored:
       self.queue.append(strip_pattern.sub(' ', message))
       self.counter += 1
+    if e.arguments[0].strip([',', ':']) == c.get_nickname():
+      if e.arguments[1] == "search":
+        Thread(target=self.usersearch,
+               args=(c, " ".join(e.arguments[2:]))).start()
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
                                        random.random() < self.chance):
@@ -98,6 +102,24 @@ class Lucy(irc.bot.SingleServerIRCBot):
     except:
       self.logger.exception("Failed ES")
     self.queue.extendleft(reversed(messages[len(self.queue):]))
+
+  def usersearch(self, c, message):
+    try:
+      query = {"query": {"match": {"body": message}}}
+      result = self.es.search(query, index=self.index, size=5)
+      hits = result["hits"]["hits"]
+      self.chan_msg(c, "{} results, showing 5.".format(result["hits"]
+                                                              ["total"]))
+      for hit in result["hits"]["hits"]:
+        score, source = hit["_score"], hit["_source"]
+        body, date, nick = source["body"], source["date"], source["nick"]
+        timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
+        msg = "{:.3} {:%Y-%m-%d %H:%M:%S} <{}> {}".format(score, timestamp,
+                                                          nick, body)
+        self.chan_msg(c, msg)
+    except:
+      self.logger.exception("Failed ES")
+      self.chan_msg(c, "Exception!")
 
   def log(self, nick, message):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
