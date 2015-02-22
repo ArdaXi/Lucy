@@ -26,7 +26,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.chance = config['chance']
     self.ignored = config['ignored']
     self.queuelen = config['queuelen']
-    self.queueminlen = config'queueminlen']
+    self.queueminlen = config['queueminlen']
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
     self.logger = logging.getLogger(__name__)
