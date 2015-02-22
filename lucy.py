@@ -116,7 +116,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
         score, source = hit["_score"], hit["_source"]
         body, date, nick = source["body"], source["date"], source["nick"]
         timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
-        msg = "{:.3} {:%Y-%m-%d %H:%M:%S} <{}> {}".format(score, timestamp,
+        msg = "{:.5} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
                                                           nick, body)
         self.chan_msg(c, msg)
     except:
