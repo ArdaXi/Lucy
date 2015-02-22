@@ -49,6 +49,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       if e.arguments[1] == "search":
         Thread(target=self.usersearch,
                args=(c, " ".join(e.arguments[2:]))).start()
+        return
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
                                        random.random() < self.chance):
