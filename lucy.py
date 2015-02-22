@@ -31,6 +31,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.numid = self.es.count("*", index=self.index)['count']
     self.logger = logging.getLogger(__name__)
     self.queue = deque(maxlen=self.queuelen)
+    self.counter = 0
     
   def on_nicknameinuse(self, c, e):
     c.nick(c.get_nickname() + "_")
@@ -43,9 +44,12 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.log(e.source.nick, message)
     if e.source.nick not in self.ignored:
       self.queue.append(strip_pattern.sub(' ', message))
-    if c.get_nickname() in message or (len(self.queue) >= self.queueminlen and
+      self.counter += 1
+    if c.get_nickname() in message or (self.counter >= self.queueminlen and
+                                       len(self.queue) >= self.queueminlen and
                                        random.random() < self.chance):
       Thread(target=self.search, args=(c, list(self.queue))).start()
+      self.counter = 0
 
   def on_join(self, c, e):
     pass
