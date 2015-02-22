@@ -25,10 +25,12 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.index = config['index']
     self.chance = config['chance']
     self.ignored = config['ignored']
+    self.queuelen = config['queuelen']
+    self.queueminlen = math.ceil(self.queuelen / 2.0)
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
     self.logger = logging.getLogger(__name__)
-    self.queue = deque(maxlen=10) #TODO: Make configurable
+    self.queue = deque(maxlen=self.queuelen)
     
   def on_nicknameinuse(self, c, e):
     c.nick(c.get_nickname() + "_")
@@ -41,7 +43,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.log(e.source.nick, message)
     if e.source.nick not in self.ignored:
       self.queue.append(strip_pattern.sub(' ', message))
-    if c.get_nickname() in message or len(self.queue) >= 5 and random.random() < self.chance:
+    if c.get_nickname() in message or (len(self.queue) >= self.queueminlen and
+                                       random.random() < self.chance):
       Thread(target=self.search, args=(c, list(self.queue))).start()
       self.queue.clear()
 
