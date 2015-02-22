@@ -46,7 +46,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
     if c.get_nickname() in message or (len(self.queue) >= self.queueminlen and
                                        random.random() < self.chance):
       Thread(target=self.search, args=(c, list(self.queue))).start()
-      self.queue.clear()
 
   def on_join(self, c, e):
     pass
