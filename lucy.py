@@ -45,7 +45,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     if e.source.nick not in self.ignored:
       self.queue.append(strip_pattern.sub(' ', message))
       self.counter += 1
-    if e.arguments[0].strip(",:"]) == c.get_nickname():
+    if e.arguments[0].strip(",:") == c.get_nickname():
       if e.arguments[1] == "search":
         Thread(target=self.usersearch,
                args=(c, " ".join(e.arguments[2:]))).start()
