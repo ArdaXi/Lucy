@@ -49,7 +49,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     if args[0].strip(",: ") == c.get_nickname():
       if args[1] == "search":
         Thread(target=self.usersearch,
-               args=(c, " ".join(e.arguments[2:]))).start()
+               args=(c, " ".join(e.args[2:]))).start()
         return
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
