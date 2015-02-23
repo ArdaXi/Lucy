@@ -58,7 +58,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       if args[1] == "when":
         if len(args) < 4:
           return
-        Thread(target=self.when, args=(c, args[2], args[3:])).start()
+        Thread(target=self.when, args=(c, args[2], " ".join(args[3:]))).start()
         return
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
