@@ -77,7 +77,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.log(c.get_nickname(), message)
 
   def search(self, c, messages):
-    message = " ".join(messages).encode("utf-8")
+    message = " ".join(messages).replace(c.get_nickname(), '').encode("utf-8")
     try:
       query = {"_source": ["body", "date", "numid"],
                "query":
