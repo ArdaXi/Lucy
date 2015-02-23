@@ -95,7 +95,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       #threshold = message.count(" ") / len(messages) + 0.9
       threshold = 0.1
       for hit in result["hits"]["hits"]:
-        score, source = hit["_score"], hit["_source"]
+        score, source, id = hit["_score"], hit["_source"], hit["_id"]
         body, date, numid = source["body"], source["date"], source["numid"]
         if score < threshold:
           self.logger.info("'{}' has score {}, threshold: {}".format(body.encode("utf-8"),
@@ -110,10 +110,15 @@ class Lucy(irc.bot.SingleServerIRCBot):
         self.lastmsg = numid
         time.sleep(body.count(" ") * 0.2 + 0.5)
         self.chan_msg(c, body)
+        self.incrementmsg(id)
         return
     except:
       self.logger.exception("Failed ES")
     self.queue.extendleft(reversed(messages[len(self.queue):]))
+
+  def incrementmsg(self, id):
+    script = "ctx._source.mentions+=1"
+    self.es.update(self.index, "message", id, script)
 
   def usersearch(self, c, message):
     try:
