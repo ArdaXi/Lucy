@@ -32,6 +32,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.logger = logging.getLogger(__name__)
     self.queue = deque(maxlen=self.queuelen)
     self.counter = 0
+    self.lastmsg = 0
     
   def on_nicknameinuse(self, c, e):
     c.nick(c.get_nickname() + "_")
@@ -50,6 +51,9 @@ class Lucy(irc.bot.SingleServerIRCBot):
       if args[1] == "search":
         Thread(target=self.usersearch,
                args=(c, " ".join(args[2:]))).start()
+        return
+      if args[1] == "lastmsg":
+        Thread(target=self.lastmsg, args=(c,)).start()
         return
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
@@ -70,7 +74,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
   def search(self, c, messages):
     message = " ".join(messages).encode("utf-8")
     try:
-      query = {"_source": ["body", "date"],
+      query = {"_source": ["body", "date", "numid"],
                "query":
                {"filtered": {"query": {"function_score": {"query": {"match": {"body": message}},
                                                           "gauss": {"numid": {"origin": 1,
@@ -87,7 +91,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       threshold = 0.1
       for hit in result["hits"]["hits"]:
         score, source = hit["_score"], hit["_source"]
-        body, date = source["body"], source["date"]
+        body, date, numid = source["body"], source["date"], source["numid"]
         if score < threshold:
           self.logger.info("'{}' has score {}, threshold: {}".format(body.encode("utf-8"),
                                                                      score,
@@ -98,6 +102,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
         if delta.total_seconds() < 10800:
           continue
         self.logger.info("'{}' has score {}".format(body, score))
+        self.lastmsg = numid
         time.sleep(body.count(" ") * 0.2 + 0.5)
         self.chan_msg(c, body)
         return
@@ -119,8 +124,26 @@ class Lucy(irc.bot.SingleServerIRCBot):
         body, date, nick = source["body"], source["date"], source["nick"]
         timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
         msg = "{:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
-                                                          nick, body.encode("utf-8"))
+                                                       nick, body.encode("utf-8"))
         self.chan_msg(c, msg)
+    except:
+      self.logger.exception("Failed ES")
+      self.chan_msg(c, "Exception!")
+
+  def lastmsg(self, c):
+    if self.lastmsg == 0:
+      self.chan_msg(c, "I haven't even said anything!")
+      return
+    try:
+      query = {"query": {"match": {"numid": self.lastmsg}}}
+      result = self.es.search(query, index=self.index, size=1)
+      hit = result["hits"]["hits"][0]
+      source = hit["_source"]
+      body, date, nick = source["body"], source["date"], source["nick"]
+      timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
+      msg = "{:%Y-%m-%d %H:%M} <{}> {}".format(timestamp, nick,
+                                               body.encode("utf-8"))
+      self.chan_msg(c, msg)
     except:
       self.logger.exception("Failed ES")
       self.chan_msg(c, "Exception!")
