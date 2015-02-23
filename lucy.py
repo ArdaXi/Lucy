@@ -53,7 +53,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
                args=(c, " ".join(args[2:]))).start()
         return
       if args[1] == "lastmsg":
-        Thread(target=self.lastmsg, args=(c,)).start()
+        Thread(target=self.getlastmsg, args=(c,)).start()
         return
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
@@ -130,7 +130,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       self.logger.exception("Failed ES")
       self.chan_msg(c, "Exception!")
 
-  def lastmsg(self, c):
+  def getlastmsg(self, c):
     if self.lastmsg == 0:
       self.chan_msg(c, "I haven't even said anything!")
       return
