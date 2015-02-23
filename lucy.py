@@ -129,6 +129,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
 
   def when(self, c, nick, message):
     try:
+      nick = nick.lower()
       query = {"query": {"filtered": {"query": {"function_score": 
         {"query": {"match": {"body": message}},
          "random_score": {}}},
