@@ -135,7 +135,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       self.chan_msg(c, "I haven't even said anything!")
       return
     try:
-      query = {"query": {"match": {"numid": self.lastmsg}}}
+      query = {"filter": {"term": {"numid": self.lastmsg}}}
       result = self.es.search(query, index=self.index, size=1)
       hit = result["hits"]["hits"][0]
       source = hit["_source"]
