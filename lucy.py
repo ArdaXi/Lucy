@@ -55,6 +55,11 @@ class Lucy(irc.bot.SingleServerIRCBot):
       if args[1] == "lastmsg":
         Thread(target=self.getlastmsg, args=(c,)).start()
         return
+      if args[1] == "when":
+        if len(args) < 4:
+          return
+        Thread(target=self.when, args=(c, args[2], args[3:])).start()
+        return
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
                                        random.random() < self.chance):
@@ -116,19 +121,35 @@ class Lucy(irc.bot.SingleServerIRCBot):
                                             "random_score": {}}}}
       result = self.es.search(query, index=self.index, size=5)
       hits = result["hits"]["hits"]
-      self.chan_msg(c, "{} results, showing {}.".format(result["hits"]
-                                                              ["total"],
-                                                        len(hits)))
-      for hit in result["hits"]["hits"]:
-        score, source = hit["_score"], hit["_source"]
-        body, date, nick = source["body"], source["date"], source["nick"]
-        timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
-        msg = "{:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
-                                                       nick, body.encode("utf-8"))
-        self.chan_msg(c, msg)
+      total = result["hits"]["total"]
+      self.sayhits(c, hits, total)
     except:
       self.logger.exception("Failed ES")
       self.chan_msg(c, "Exception!")
+
+  def when(self, c, nick, message):
+    try:
+      query = {"query": {"filtered": {"query": {"function_score": 
+        {"query": {"match": {"body": message}},
+         "random_score": {}}},
+                                      "filter": {"term": {"nick": nick}}}}}
+      result = self.es.search(query, index=self.index, size=5)
+      hits = result["hits"]["hits"]
+      total = result["hits"]["total"]
+      self.sayhits(c, hits, total)
+    except:
+      self.logger.exception("Failed ES")
+      self.chan_msg(c, "Exception!")
+
+  def sayhits(self, c, hits, total):
+    self.chan_msg(c, "{} results, showing {}.".format(total, len(hits)))
+    for hit in hits:
+      score, source = hit["_score"], hit["_source"]
+      body, date, nick = source["body"], source["date"], source["nick"]
+      timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
+      msg = "{:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
+                                                     nick, body.encode("utf-8"))
+      self.chan_msg(c, msg)
 
   def getlastmsg(self, c):
     if self.lastmsg == 0:
