@@ -119,7 +119,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
         body, date, nick = source["body"], source["date"], source["nick"]
         timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
         msg = "{:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
-                                                          nick, body)
+                                                          nick, body.encode("utf-8"))
         self.chan_msg(c, msg)
     except:
       self.logger.exception("Failed ES")
