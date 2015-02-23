@@ -117,7 +117,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.queue.extendleft(reversed(messages[len(self.queue):]))
 
   def incrementmsg(self, id):
-    script = "(ctx._source.mentions==null)?ctx._source.mentions=1:ctx._source.mentions+=1"
+    script = "(ctx._source.mentions==null)?(ctx._source.mentions=1):(ctx._source.mentions+=1)"
     self.es.update(self.index, "message", id, script)
 
   def usersearch(self, c, message):
