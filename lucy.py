@@ -125,7 +125,9 @@ class Lucy(irc.bot.SingleServerIRCBot):
 
   def usersearch(self, c, message):
     try:
-      query = {"query": {"function_score": {"query": {"match": {"body": message}},
+      query = {"query": {"function_score": {"query": {"multi_match": {"query": message,
+                                                                      "fields" ["body",
+                                                                                "nick"]}},
                                             "random_score": {}}}}
       result = self.es.search(query, index=self.index, size=5)
       hits = result["hits"]["hits"]
