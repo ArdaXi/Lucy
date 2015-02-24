@@ -152,13 +152,20 @@ class Lucy(irc.bot.SingleServerIRCBot):
 
   def sayhits(self, c, hits, total):
     self.chan_msg(c, "{} results, showing {}.".format(total, len(hits)))
+    error = False
     for hit in hits:
       score, source = hit["_score"], hit["_source"]
       body, date, nick = source["body"], source["date"], source["nick"]
       timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
       msg = "{:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
                                                      nick, body.encode("utf-8"))
-      self.chan_msg(c, msg)
+      try:
+        self.chan_msg(c, msg.encode("utf-8"))
+      except UnicodeDecodeError:
+        if not error:
+          error = True
+          self.chan_msg(c, "Maybe add another .encode somewhere?")
+        continue
 
   def getlastmsg(self, c):
     if self.lastmsg == 0:
