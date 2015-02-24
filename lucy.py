@@ -79,7 +79,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
   def search(self, c, messages):
     message = " ".join(messages).replace(c.get_nickname(), '').encode("utf-8")
     try:
-      query = {"_source": ["body", "date", "numid"],
+      query = {"_source": ["body", "date"],
                "query":
                {"filtered": {"query": {"function_score": {"query": {"match": {"body": message}},
                                                           "functions": [{"gauss": {"numid": {"origin": 1,
@@ -99,7 +99,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       threshold = 0.1
       for hit in result["hits"]["hits"]:
         score, source, id = hit["_score"], hit["_source"], hit["_id"]
-        body, date, numid = source["body"], source["date"], source["numid"]
+        body, date = source["body"], source["date"]
         if score < threshold:
           self.logger.info("'{}' has score {}, threshold: {}".format(body.encode("utf-8"),
                                                                      score,
@@ -110,7 +110,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
         if delta.total_seconds() < 10800:
           continue
         self.logger.info("'{}' has score {}".format(body, score))
-        self.lastmsg = numid
+        self.lastmsg = id
         time.sleep(body.count(" ") * 0.2 + 0.5)
         self.chan_msg(c, body)
         self.incrementmsg(id)
@@ -163,10 +163,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
       self.chan_msg(c, "I haven't even said anything!")
       return
     try:
-      query = {"filter": {"term": {"numid": self.lastmsg}}}
-      result = self.es.search(query, index=self.index, size=1)
-      hit = result["hits"]["hits"][0]
-      source = hit["_source"]
+      result = self.es.get(self.index, "message", self.lastmsg)
+      source = result["_source"]
       body, date, nick = source["body"], source["date"], source["nick"]
       timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
       msg = "{:%Y-%m-%d %H:%M} <{}> {}".format(timestamp, nick,
@@ -174,7 +172,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
       self.chan_msg(c, msg)
     except:
       self.logger.exception("Failed ES")
-      self.chan_msg(c, "Exception!")
 
   def log(self, nick, message):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
