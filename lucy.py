@@ -133,7 +133,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
       self.sayhits(c, hits, total)
     except:
       self.logger.exception("Failed ES")
-      self.chan_msg(c, "Exception!")
 
   def when(self, c, nick, message):
     try:
@@ -148,7 +147,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
       self.sayhits(c, hits, total)
     except:
       self.logger.exception("Failed ES")
-      self.chan_msg(c, "Exception!")
 
   def sayhits(self, c, hits, total):
     self.chan_msg(c, "{} results, showing {}.".format(total, len(hits)))
