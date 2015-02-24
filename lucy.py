@@ -162,6 +162,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       try:
         self.chan_msg(c, msg.encode("utf-8"))
       except UnicodeDecodeError:
+        self.logger.exception("Unicode failure.")
         if not error:
           error = True
           self.chan_msg(c, "Maybe add another .encode somewhere?")
