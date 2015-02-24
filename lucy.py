@@ -82,9 +82,12 @@ class Lucy(irc.bot.SingleServerIRCBot):
       query = {"_source": ["body", "date", "numid"],
                "query":
                {"filtered": {"query": {"function_score": {"query": {"match": {"body": message}},
-                                                          "gauss": {"numid": {"origin": 1,
-                                                                              "offset": 1,
-                                                                              "scale": math.floor(self.numid/2)}}}},
+                                                          "functions": ["gauss": {"numid": {"origin": 1,
+                                                                                            "offset": 1,
+                                                                                            "scale": math.floor(self.numid/
+                                                                                                                2)}},
+                                                                        "linear": {"mentions": {"origin": 0,
+                                                                                                "scale": 1}}]}},
                              "filter": {"bool": {
                                          "must_not": [
                                           {"terms": {"nick": self.ignored}},
