@@ -15,11 +15,11 @@ import math
 strip_pattern = re.compile("[^\w ']+", re.UNICODE)
 logging.basicConfig(level=logging.INFO)
 
-class Lucy(irc.bot.SingleServerIRCBot):
+class IgnoreErrorsBuffer(irc.buffer.DecodingLineBuffer):
+  def handle_exception(self):
+    pass
 
-  class IgnoreErrorsBuffer(irc.buffer.DecodingLineBuffer):
-    def handle_exception(self):
-      pass
+class Lucy(irc.bot.SingleServerIRCBot):
 
   def __init__(self, config):
     with open(config) as f:
