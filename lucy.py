@@ -43,7 +43,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     c.nick(c.get_nickname() + "_")
   
   def on_welcome(self, c, e):
-    buffer_class = IgnoreErrorsBuffer
+    c.buffer_class = IgnoreErrorsBuffer
     c.join(self.channel)
 
   def on_pubmsg(self, c, e):
