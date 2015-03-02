@@ -16,6 +16,11 @@ strip_pattern = re.compile("[^\w ']+", re.UNICODE)
 logging.basicConfig(level=logging.INFO)
 
 class Lucy(irc.bot.SingleServerIRCBot):
+
+  class IgnoreErrorsBuffer(irc.buffer.DecodingLineBuffer):
+    def handle_exception(self):
+      pass
+
   def __init__(self, config):
     with open(config) as f:
       config = json.load(f)
@@ -38,7 +43,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     c.nick(c.get_nickname() + "_")
   
   def on_welcome(self, c, e):
-    buffer_class = irc.buffer.LenientDecodingLineBuffer
+    buffer_class = IgnoreErrorsBuffer
     c.join(self.channel)
 
   def on_pubmsg(self, c, e):
