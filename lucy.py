@@ -16,8 +16,13 @@ strip_pattern = re.compile("[^\w ']+", re.UNICODE)
 logging.basicConfig(level=logging.INFO)
 
 class IgnoreErrorsBuffer(irc.buffer.DecodingLineBuffer):
+
+  def __init__(self, *args, **kwargs):
+    super(IgnoreErrorsBuffer, self).__init__(*args, **kwargs)
+    self.logger = logging.getLogger("IgnoreErrorsBuffer")
+
   def handle_exception(self):
-    pass
+    self.logger.exception("Unicodey.")
 
 class Lucy(irc.bot.SingleServerIRCBot):
 
@@ -35,7 +40,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.queueminlen = config['queueminlen']
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
-    self.logger = logging.getLogger(__name__)
+    self.logger = logging.getLogger("Lucy")
     self.queue = deque(maxlen=self.queuelen)
     self.counter = 0
     self.lastmsg = 0
