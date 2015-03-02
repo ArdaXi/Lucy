@@ -26,6 +26,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       config = json.load(f)
     server, port, nick = config['server'], config['port'], config['nick']
     irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nick, nick)
+    self.connection.buffer_class = IgnoreErrorsBuffer
     self.channel = config['channel']
     self.index = config['index']
     self.chance = config['chance']
@@ -43,7 +44,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
     c.nick(c.get_nickname() + "_")
   
   def on_welcome(self, c, e):
-    c.buffer_class = IgnoreErrorsBuffer
     c.join(self.channel)
 
   def on_pubmsg(self, c, e):
