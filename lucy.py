@@ -77,7 +77,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.log(c.get_nickname(), message)
 
   def search(self, c, messages):
-    message = " ".join(messages).replace(c.get_nickname(), '').encode("utf-8")
+    message = " ".join(messages).replace(c.get_nickname(), '')
     try:
       query = {"_source": ["body", "date"],
                "query":
@@ -101,7 +101,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
         score, source, id = hit["_score"], hit["_source"], hit["_id"]
         body, date = source["body"], source["date"]
         if score < threshold:
-          self.logger.info("'{}' has score {}, threshold: {}".format(body.encode("utf-8"),
+          self.logger.info("'{}' has score {}, threshold: {}".format(body,
                                                                      score,
                                                                      threshold))
           break
@@ -158,14 +158,14 @@ class Lucy(irc.bot.SingleServerIRCBot):
       body, date, nick = source["body"], source["date"], source["nick"]
       timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
       msg = "{:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
-                                                     nick, body.encode("utf-8"))
+                                                     nick, body)
       try:
-        self.chan_msg(c, msg.encode("utf-8"))
+        self.chan_msg(c, msg)
       except UnicodeDecodeError:
         self.logger.exception("Unicode failure.")
         if not error:
           error = True
-          self.chan_msg(c, "Maybe add another .encode somewhere?")
+          self.chan_msg(c, "Maybe remove another .encode somewhere?")
         continue
 
   def getlastmsg(self, c):
@@ -178,7 +178,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       body, date, nick = source["body"], source["date"], source["nick"]
       timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
       msg = "{:%Y-%m-%d %H:%M} <{}> {}".format(timestamp, nick,
-                                               body.encode("utf-8"))
+                                               body)
       self.chan_msg(c, msg)
     except:
       self.logger.exception("Failed ES")
