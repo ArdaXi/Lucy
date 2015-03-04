@@ -210,11 +210,14 @@ class Lucy(irc.bot.SingleServerIRCBot):
                                               "lte": numid+3}}}}
       result = self.es.search(query, index=self.index)
       hits = sorted(result["hits"]["hits"],
-                    key=operator.itemgetter("_score"))
+                    key=self.numid_from_hit)
       total = result["hits"]["total"]
       self.sayhits(c, hits, total)
     except:
       self.logger.exception("Failed ES")
+
+  def numid_from_hit(self):
+    return hit["_source"]["numid"]
 
   def log(self, nick, message):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
