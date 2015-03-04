@@ -106,16 +106,9 @@ class Lucy(irc.bot.SingleServerIRCBot):
                                                       {"gte": self.numid-1000}}
                                           }]}}}}}
       result = self.es.search(query, index=self.index)
-      #threshold = message.count(" ") / len(messages) + 0.9
-      threshold = 0.1
       for hit in result["hits"]["hits"]:
         score, source, id = hit["_score"], hit["_source"], hit["_id"]
         body, date = source["body"], source["date"]
-        if score < threshold:
-          self.logger.info("'{}' has score {}, threshold: {}".format(body,
-                                                                     score,
-                                                                     threshold))
-          break
         timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
         delta = datetime.now() - timestamp
         if delta.total_seconds() < 10800:
