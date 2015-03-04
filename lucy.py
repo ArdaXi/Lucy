@@ -208,6 +208,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
       hits = result["hits"]["hits"]
       total = result["hits"]["total"]
       self.sayhits(c, hits, total)
+    except:
+      self.logger.exception("Failed ES")
 
   def log(self, nick, message):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
