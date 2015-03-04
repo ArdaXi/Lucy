@@ -205,8 +205,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
       result = self.es.get(self.index, "message", self.lastmsg)
       source = result["_source"]
       numid = source["numid"]
-      query = {"filter": {"range": {"numid": {"gte": numid-5,
-                                              "lte": numid+5}}}}
+      query = {"filter": {"range": {"numid": {"gte": numid-3,
+                                              "lte": numid+3}}}}
       result = self.es.search(query, index=self.index)
       hits = result["hits"]["hits"]
       total = result["hits"]["total"]
