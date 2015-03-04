@@ -160,7 +160,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       self.logger.exception("Failed ES")
 
   def sayhits(self, c, hits, total):
-    if len(hits) > total:
+    if total > len(hits):
       self.chan_msg(c, "{} results, showing {}.".format(total, len(hits)))
     else:
       self.chan_msg(c, "{} results.".format(total))
