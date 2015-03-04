@@ -58,19 +58,20 @@ class Lucy(irc.bot.SingleServerIRCBot):
     if e.source.nick not in self.ignored:
       self.queue.append(strip_pattern.sub(' ', message))
       self.counter += 1
-    if len(args) > 1 and args[0].strip(",: ") == c.get_nickname():
-      if args[1] == "search":
-        Thread(target=self.usersearch,
-               args=(c, " ".join(args[2:]))).start()
-        return
-      if args[1] == "lastmsg":
-        Thread(target=self.getlastmsg, args=(c,)).start()
-        return
-      if args[1] == "when":
-        if len(args) < 4:
+    if args[0].strip(",: ") == c.get_nickname():
+      if len(args) > 1:
+        if args[1] == "search":
+          Thread(target=self.usersearch,
+                 args=(c, " ".join(args[2:]))).start()
           return
-        Thread(target=self.when, args=(c, args[2], " ".join(args[3:]))).start()
-        return
+        if args[1] == "lastmsg":
+          Thread(target=self.getlastmsg, args=(c,)).start()
+          return
+        if args[1] == "when":
+          if len(args) < 4:
+            return
+          Thread(target=self.when, args=(c, args[2], " ".join(args[3:]))).start()
+          return
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
                                        random.random() < self.chance):
