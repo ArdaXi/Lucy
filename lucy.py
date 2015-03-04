@@ -216,7 +216,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     except:
       self.logger.exception("Failed ES")
 
-  def numid_from_hit(self):
+  def numid_from_hit(self, hit):
     return hit["_source"]["numid"]
 
   def log(self, nick, message):
