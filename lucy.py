@@ -208,7 +208,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
       query = {"filter": {"range": {"numid": {"gte": numid-3,
                                               "lte": numid+3}}}}
       result = self.es.search(query, index=self.index)
-      hits = result["hits"]["hits"]
+      hits = sorted(result["hits"]["hits"],
+                    key=operator.itemgetter("_score"))
       total = result["hits"]["total"]
       self.sayhits(c, hits, total)
     except:
