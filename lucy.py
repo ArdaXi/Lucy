@@ -72,6 +72,9 @@ class Lucy(irc.bot.SingleServerIRCBot):
             return
           Thread(target=self.when, args=(c, args[2], " ".join(args[3:]))).start()
           return
+        if args[1] == "context":
+          Thread(target=self.context, args=(c,)).start()
+          return
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
                                        random.random() < self.chance):
@@ -156,7 +159,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
       self.logger.exception("Failed ES")
 
   def sayhits(self, c, hits, total):
-    self.chan_msg(c, "{} results, showing {}.".format(total, len(hits)))
+    if len(hits) > total:
+      self.chan_msg(c, "{} results, showing {}.".format(total, len(hits)))
+    else:
+      self.chan_msg(c, "{} results.".format(total))
     error = False
     for hit in hits:
       score, source = hit["_score"], hit["_source"]
@@ -188,6 +194,21 @@ class Lucy(irc.bot.SingleServerIRCBot):
     except:
       self.logger.exception("Failed ES")
 
+  def context(self, c):
+    if self.lastmsg == 0:
+      self.chan_msg(c, "I haven't even said anything!")
+      return
+    try:
+      result = self.es.get(self.index, "message", self.lastmsg)
+      source = result["_source"]
+      numid = source["numid"]
+      query = {"filter": {"range": {"numid": {"gte": numid-5,
+                                              "lte": numid+5}}}}
+      result = self.es.search(query, index=self.index)
+      hits = result["hits"]["hits"]
+      total = result["hits"]["total"]
+      self.sayhits(c, hits, total)
+
   def log(self, nick, message):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
            'nick': nick, 'body': message}
@@ -201,3 +222,5 @@ if __name__ == "__main__":
   except KeyboardInterrupt:
     bot.die()
     raise
+
+# vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab
