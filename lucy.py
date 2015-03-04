@@ -56,7 +56,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     message = " ".join(e.arguments)
     args = message.split(" ")
     self.log(e.source.nick, message)
-    if e.source.nick not in self.ignored:
+    if e.source.nick.lower() not in self.ignored:
       self.queue.append(strip_pattern.sub(' ', message))
       self.counter += 1
     if args[0].strip(",: ") == c.get_nickname():
