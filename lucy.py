@@ -168,8 +168,11 @@ class Lucy(irc.bot.SingleServerIRCBot):
       score, source = hit["_score"], hit["_source"]
       body, date, nick = source["body"], source["date"], source["nick"]
       timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
-      msg = "{:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
-                                                     nick, body)
+      if score == 1.0:
+        msg = "{:%Y-%m-%d %H:%M} <{}> {}".format(timestamp, nick, body)
+      else:
+        msg = "{:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
+                                                       nick, body)
       try:
         self.chan_msg(c, msg)
       except UnicodeDecodeError:
