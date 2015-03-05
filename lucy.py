@@ -127,8 +127,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     try:
       query = {"query": {"function_score": {"query": {"multi_match": {"query": message,
                                                                       "fields": ["body",
-                                                                                 "nick"]}},
-                                            "random_score": {}}}}
+                                                                                 "nick"]}}}}}
       result = self.es.search(query, index=self.index, size=5)
       hits = result["hits"]["hits"]
       total = result["hits"]["total"]
@@ -140,8 +139,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
     try:
       nick = nick.lower()
       query = {"query": {"filtered": {"query": {"function_score": 
-        {"query": {"match": {"body": message}},
-         "random_score": {}}},
+                {"query": {"match": {"body": message}},
+                 "random_score": {}}},
                                       "filter": {"term": {"nick": nick}}}}}
       result = self.es.search(query, index=self.index, size=5)
       hits = result["hits"]["hits"]
