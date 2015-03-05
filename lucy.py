@@ -32,18 +32,14 @@ class Lucy(irc.bot.SingleServerIRCBot):
     server, port, nick = config['server'], config['port'], config['nick']
     irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nick, nick)
     self.connection.buffer_class = IgnoreErrorsBuffer
-    self.channel = config['channel']
-    self.index = config['index']
-    self.chance = config['chance']
-    self.ignored = config['ignored']
-    self.queuelen = config['queuelen']
-    self.queueminlen = config['queueminlen']
+    self.channel, self.index = config['channel'], config['index']
+    self.chance, self.ignored = config['chance'], config['ignored']
+    self.queuelen, self.queueminlen = config['queuelen'], config['queueminlen']
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
     self.logger = logging.getLogger("Lucy")
     self.queue = deque(maxlen=self.queuelen)
-    self.counter = 0
-    self.lastmsg = 0
+    self.counter, self.lastmsg = 0, 0
     
   def on_nicknameinuse(self, c, e):
     c.nick(c.get_nickname() + "_")
@@ -58,7 +54,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     if e.source.nick.lower() not in self.ignored:
       self.queue.append(strip_pattern.sub(' ', message))
       self.counter += 1
-    if args[0].strip(",: ") == c.get_nickname():
+    if args[0].strip(",:") == c.get_nickname():
       if len(args) > 1:
         if args[1] == "search":
           Thread(target=self.usersearch,
@@ -68,10 +64,9 @@ class Lucy(irc.bot.SingleServerIRCBot):
           Thread(target=self.getlastmsg, args=(c,)).start()
           return
         if args[1] == "when":
-          if len(args) < 4:
+          if len(args) > 3:
+            Thread(target=self.when, args=(c, args[2], " ".join(args[3:]))).start()
             return
-          Thread(target=self.when, args=(c, args[2], " ".join(args[3:]))).start()
-          return
         if args[1] == "context":
           Thread(target=self.context, args=(c,)).start()
           return
@@ -94,7 +89,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
   def search(self, c, messages):
     message = " ".join(messages).replace(c.get_nickname(), '')
     try:
-      query = {"_source": ["body", "date"],
+      query = {"_source": ["body"],
                "query":
                {"filtered": {"query": {"function_score": {"query": {"match": {"body": message}},
                                                           "functions": [{"gauss": {"numid": {"origin": 1,
@@ -107,16 +102,13 @@ class Lucy(irc.bot.SingleServerIRCBot):
                                          "must_not": [
                                           {"terms": {"nick": self.ignored}},
                                           {"range": {"numid":
-                                                      {"gte": self.numid-1000}}
-                                          }]}}}}}
+                                                      {"gte": self.numid-1000}}},
+                                          {"range": {"date":
+                                                      {"lt": "now-1d"}}}]}}}}}
       result = self.es.search(query, index=self.index)
       for hit in result["hits"]["hits"]:
         score, source, id = hit["_score"], hit["_source"], hit["_id"]
-        body, date = source["body"], source["date"]
-        timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
-        delta = datetime.now() - timestamp
-        if delta.total_seconds() < 10800:
-          continue
+        body = source["body"]
         self.logger.info("'{}' has score {}".format(body, score))
         self.lastmsg = id
         time.sleep(body.count(" ") * 0.2 + 0.5)
