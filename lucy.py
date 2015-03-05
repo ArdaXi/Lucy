@@ -104,7 +104,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
                                           {"range": {"numid":
                                                       {"gte": self.numid-1000}}},
                                           {"range": {"date":
-                                                      {"lt": "now-1d"}}}]}}}}}
+                                                      {"gt": "now-1d"}}}]}}}}}
       result = self.es.search(query, index=self.index)
       for hit in result["hits"]["hits"]:
         score, source, id = hit["_score"], hit["_source"], hit["_id"]
