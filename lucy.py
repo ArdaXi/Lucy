@@ -187,8 +187,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       result = self.es.get(self.index, "message", self.lastmsg)
       source = result["_source"]
       numid = source["numid"]
-      query = {"_source": ["body", "date", "nick"],
-               "filter": {"range": {"numid": {"gte": numid-3,
+      query = {"filter": {"range": {"numid": {"gte": numid-3,
                                               "lte": numid+3}}}}
       result = self.es.search(query, index=self.index)
       hits = sorted(result["hits"]["hits"],
