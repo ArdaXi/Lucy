@@ -125,9 +125,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
 
   def usersearch(self, c, message):
     try:
-      query = {"query": {"function_score": {"query": {"multi_match": {"query": message,
-                                                                      "fields": ["body",
-                                                                                 "nick"]}}}}}
+      query = {"_source": ["body", "date", "nick"],
+               "query": {"multi_match": {"query": message,
+                                         "fields": ["body",
+                                                    "nick"]}}}
       result = self.es.search(query, index=self.index, size=5)
       hits = result["hits"]["hits"]
       total = result["hits"]["total"]
@@ -138,9 +139,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
   def when(self, c, nick, message):
     try:
       nick = nick.lower()
-      query = {"query": {"filtered": {"query": {"function_score": 
-                {"query": {"match": {"body": message}},
-                 "random_score": {}}},
+      query = {"_source": ["body", "date", "nick"],
+               "query": {"filtered": {"query": {"match": {"body": message}},
                                       "filter": {"term": {"nick": nick}}}}}
       result = self.es.search(query, index=self.index, size=5)
       hits = result["hits"]["hits"]
@@ -164,14 +164,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       else:
         msg = "{:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
                                                        nick, body)
-      try:
-        self.chan_msg(c, msg)
-      except UnicodeDecodeError:
-        self.logger.exception("Unicode failure.")
-        if not error:
-          error = True
-          self.chan_msg(c, "Maybe remove another .encode somewhere?")
-        continue
+      self.chan_msg(c, msg)
 
   def getlastmsg(self, c):
     if self.lastmsg == 0:
@@ -196,7 +189,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
       result = self.es.get(self.index, "message", self.lastmsg)
       source = result["_source"]
       numid = source["numid"]
-      query = {"filter": {"range": {"numid": {"gte": numid-3,
+      query = {"_source": ["body", "date", "nick"],
+               "filter": {"range": {"numid": {"gte": numid-3,
                                               "lte": numid+3}}}}
       result = self.es.search(query, index=self.index)
       hits = sorted(result["hits"]["hits"],
