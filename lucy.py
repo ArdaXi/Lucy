@@ -1,15 +1,13 @@
+from datetime import datetime
+from threading import Thread
+from collections import deque
 import irc.bot
 import json
 import pyelasticsearch
-from datetime import datetime
 import random
-import sys
 import re
 import logging
-from threading import Thread
 import time
-from collections import deque
-from datetime import datetime
 import math
 
 strip_pattern = re.compile("[^\w ']+", re.UNICODE)
