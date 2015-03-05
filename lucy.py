@@ -11,7 +11,6 @@ import time
 from collections import deque
 from datetime import datetime
 import math
-import operator
 
 strip_pattern = re.compile("[^\w ']+", re.UNICODE)
 logging.basicConfig(level=logging.INFO)
