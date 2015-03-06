@@ -67,7 +67,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
             Thread(target=self.when, args=(c, args[2], " ".join(args[3:]))).start()
             return
         if args[1] == "context":
-          Thread(target=self.context, args=(c,)).start()
+          id = args[2] if len(args) > 2 else None
+          Thread(target=self.context, args=(c,id)).start()
           return
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
@@ -183,12 +184,13 @@ class Lucy(irc.bot.SingleServerIRCBot):
     except:
       self.logger.exception("Failed ES")
 
-  def context(self, c):
-    if self.lastmsg == 0:
+  def context(self, c, id):
+    lastmsg = id if id else self.lastmsg
+    if lastmsg == 0:
       self.chan_msg(c, "I haven't even said anything!")
       return
     try:
-      result = self.es.get(self.index, "message", self.lastmsg)
+      result = self.es.get(self.index, "message", lastmsg)
       source = result["_source"]
       numid = source["numid"]
       query = {"filter": {"range": {"numid": {"gte": numid-3,
