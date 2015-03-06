@@ -157,15 +157,14 @@ class Lucy(irc.bot.SingleServerIRCBot):
       self.chan_msg(c, "{} results.".format(total))
     error = False
     for hit in hits:
-      score, source = hit["_score"], hit["_source"]
+      score, source, id = hit["_score"], hit["_source"], hit["_id"]
       body, date, nick = source["body"], source["date"], source["nick"]
-      numid = source["numid"]
       timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
       if score == 1.0:
-        msg = "{} {:%Y-%m-%d %H:%M} <{}> {}".format(numid, timestamp,
+        msg = "{} {:%Y-%m-%d %H:%M} <{}> {}".format(id, timestamp,
                                                     nick, body)
       else:
-        msg = "{} {:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(numid, score,
+        msg = "{} {:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(id, score,
                                                           timestamp, nick,
                                                           body)
       self.chan_msg(c, msg)
