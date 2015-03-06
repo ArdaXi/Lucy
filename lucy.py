@@ -128,8 +128,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
 
   def usersearch(self, c, message):
     try:
-      query = {"_source": ["body", "date", "nick"],
-               "query": {"multi_match": {"query": message,
+      query = {"query": {"multi_match": {"query": message,
                                          "fields": ["body",
                                                     "nick"]}}}
       result = self.es.search(query, index=self.index, size=5)
@@ -142,8 +141,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
   def when(self, c, nick, message):
     try:
       nick = nick.lower()
-      query = {"_source": ["body", "date", "nick"],
-               "query": {"filtered": {"query": {"match": {"body": message}},
+      query = {"query": {"filtered": {"query": {"match": {"body": message}},
                                       "filter": {"term": {"nick": nick}}}}}
       result = self.es.search(query, index=self.index, size=5)
       hits = result["hits"]["hits"]
@@ -161,12 +159,15 @@ class Lucy(irc.bot.SingleServerIRCBot):
     for hit in hits:
       score, source = hit["_score"], hit["_source"]
       body, date, nick = source["body"], source["date"], source["nick"]
+      numid = source["numid"]
       timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
       if score == 1.0:
-        msg = "{:%Y-%m-%d %H:%M} <{}> {}".format(timestamp, nick, body)
+        msg = "{} {:%Y-%m-%d %H:%M} <{}> {}".format(numid, timestamp,
+                                                    nick, body)
       else:
-        msg = "{:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(score, timestamp,
-                                                       nick, body)
+        msg = "{} {:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(numid, score,
+                                                          timestamp, nick,
+                                                          body)
       self.chan_msg(c, msg)
 
   def getlastmsg(self, c):
