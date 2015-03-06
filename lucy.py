@@ -1,5 +1,5 @@
 from datetime import datetime
-from threading import Thread
+from threading import Thread, Lock
 from collections import deque
 import irc.bot
 import json
@@ -38,6 +38,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.logger = logging.getLogger("Lucy")
     self.queue = deque(maxlen=self.queuelen)
     self.counter, self.lastmsg = 0, 0
+    self.mention_lock = Lock()
     
   def on_nicknameinuse(self, c, e):
     c.nick(c.get_nickname() + "_")
@@ -103,7 +104,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
                                                       {"gte": self.numid-1000}}},
                                           {"range": {"date":
                                                       {"gt": "now-1d"}}}]}}}}}
-      result = self.es.search(query, index=self.index)
+      with self.mention_lock:
+        result = self.es.search(query, index=self.index)
       for hit in result["hits"]["hits"]:
         score, source, id = hit["_score"], hit["_source"], hit["_id"]
         body = source["body"]
@@ -118,8 +120,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.queue.extendleft(reversed(messages[len(self.queue):]))
 
   def incrementmsg(self, id):
-    script = "ctx._source.mentions+=1"
-    self.es.update(self.index, "message", id, script)
+    with self.mention_lock:
+      script = "ctx._source.mentions+=1"
+      self.es.update(self.index, "message", id, script)
+      time.sleep(0.5)
 
   def usersearch(self, c, message):
     try:
