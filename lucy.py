@@ -123,7 +123,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     with self.mention_lock:
       script = "ctx._source.mentions+=1"
       self.es.update(self.index, "message", id, script)
-      time.sleep(0.5)
+      time.sleep(1)
 
   def usersearch(self, c, message):
     try:
