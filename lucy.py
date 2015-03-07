@@ -147,9 +147,11 @@ class Lucy(irc.bot.SingleServerIRCBot):
 
   def usersearch(self, c, message):
     try:
-      query = {"query": {"multi_match": {"query": message,
-                                         "fields": ["body",
-                                                    "nick"]}}}
+      query = {"query": {"filtered": {
+                 "query": {"multi_match": {"query": message,
+                                           "fields": ["body",
+                                                      "nick"]}},
+                 "filter": {"not": {"terms": {"nick": self.ignored}}}}}}
       result = self.es.search(query, index=self.index, size=5)
       hits = result["hits"]["hits"]
       total = result["hits"]["total"]
