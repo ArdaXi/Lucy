@@ -70,6 +70,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
           id = args[2] if len(args) > 2 else None
           Thread(target=self.context, args=(c,id)).start()
           return
+        if args[1] == "contextquery":
+          id = args[2] if len(args) > 2 else None
+          Thread(target=self.say_contextquery, args=(c,id)).start()
+          return
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
                                        random.random() < self.chance):
@@ -184,7 +188,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     except:
       self.logger.exception("Failed ES")
 
-  def context(self, c, id):
+  def contextquery(self, c, id):
     lastmsg = id if id else self.lastmsg
     if lastmsg == 0:
       self.chan_msg(c, "I haven't even said anything!")
@@ -195,6 +199,17 @@ class Lucy(irc.bot.SingleServerIRCBot):
       numid = source["numid"]
       query = {"filter": {"range": {"numid": {"gte": numid-3,
                                               "lte": numid+3}}}}
+      return query
+    except:
+      self.logger.exception("Failed ES")
+
+  def say_contextquery(self, c, id):
+    query = self.contextquery(c, id)
+    self.chan_msg(c, json.dumps(query))
+
+  def context(self, c, id):
+    try:
+      query = self.contextquery(c, id)
       result = self.es.search(query, index=self.index)
       hits = sorted(result["hits"]["hits"],
                     key=self.numid_from_hit)
