@@ -74,6 +74,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
           id = args[2] if len(args) > 2 else None
           Thread(target=self.say_contextquery, args=(c,id)).start()
           return
+        if args[1] == "searchquery":
+          Thread(target=self.say_searchquery, args=(c, list(self.queue))).start()
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
                                        random.random() < self.chance):
@@ -90,25 +92,33 @@ class Lucy(irc.bot.SingleServerIRCBot):
     c.privmsg(self.channel, message)
     self.log(c.get_nickname(), message)
 
+  def searchquery(self, message):
+    return {"_source": ["body"],
+            "query":
+            {"filtered": {"query": {"function_score": {"query": {"match": {"body": message}},
+                                                       "functions": [{"gauss": {"numid": {"origin": 1,
+                                                                                          "offset": 1,
+                                                                                          "scale": math.floor(self.numid/
+                                                                                                              2)}}},
+                                                                     {"linear": {"mentions": {"origin": 0,
+                                                                                              "scale": 1}}}]}},
+                          "filter": {"bool": {
+                                      "must_not": [
+                                       {"terms": {"nick": self.ignored}},
+                                       {"range": {"numid":
+                                                   {"gte": self.numid-1000}}},
+                                       {"range": {"date":
+                                                   {"gt": "now-1d"}}}]}}}}}
+
+  def say_searchquery(self, c, messages):
+    message = " ".join(messages).replace(c.get_nickname(), '')
+    query = self.searchquery(message)
+    self.chan_msg(c, json.dumps(query))
+
   def search(self, c, messages):
     message = " ".join(messages).replace(c.get_nickname(), '')
     try:
-      query = {"_source": ["body"],
-               "query":
-               {"filtered": {"query": {"function_score": {"query": {"match": {"body": message}},
-                                                          "functions": [{"gauss": {"numid": {"origin": 1,
-                                                                                             "offset": 1,
-                                                                                             "scale": math.floor(self.numid/
-                                                                                                                2)}}},
-                                                                        {"linear": {"mentions": {"origin": 0,
-                                                                                                 "scale": 1}}}]}},
-                             "filter": {"bool": {
-                                         "must_not": [
-                                          {"terms": {"nick": self.ignored}},
-                                          {"range": {"numid":
-                                                      {"gte": self.numid-1000}}},
-                                          {"range": {"date":
-                                                      {"gt": "now-1d"}}}]}}}}}
+      query = self.searchquery(message)
       with self.mention_lock:
         result = self.es.search(query, index=self.index)
       for hit in result["hits"]["hits"]:
