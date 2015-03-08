@@ -57,7 +57,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.chance, self.ignored = config['chance'], config['ignored']
     self.queuelen, self.queueminlen = config['queuelen'], config['queueminlen']
     if self.queue:
-      self.queue = deque(self.queue, self.queuelen)
+      if self.queue.maxlen != self.queuelen:
+        self.queue = deque(self.queue, self.queuelen)
     else:
       self.queue = deque(maxlen=self.queuelen)
     
