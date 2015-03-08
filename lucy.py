@@ -28,31 +28,35 @@ class IgnoreErrorsBuffer(irc.buffer.DecodingLineBuffer):
 
 class Lucy(irc.bot.SingleServerIRCBot):
 
-  def __init__(self, config):
-    with open(config) as f:
+  def __init__(self, configfile):
+    self.configfile = configfile
+    with open(configfile) as f:
       config = json.load(f)
     server, port, nick = config['server'], config['port'], config['nick']
+    self.reload(config)
     irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nick, nick)
     self.connection.buffer_class = IgnoreErrorsBuffer
-    self.channel, self.index = config['channel'], config['index']
-    self.chance, self.ignored = config['chance'], config['ignored']
-    self.queuelen, self.queueminlen = config['queuelen'], config['queueminlen']
-    self.admins = config["admins"]
+    self.channel, self.index = config["channel"], config['index']
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
     self.logger = logging.getLogger("Lucy")
     self.queue = deque(maxlen=self.queuelen)
     self.counter, self.lastmsg = 0, 0
     self.mention_lock = Lock()
-    self.reload()
 
   def is_public_function(self, o):
     return isfunction(o) and not o.__name__.startswith('_')
 
-  def reload(self):
+  def reload(self, config=None):
     self.commands = {}
     reload(commands)
     self.commands = dict(getmembers(commands, self.is_public_function))
+    if not config:
+      with open(self.configfile) as f:
+        config = json.load(f)
+    self.admins, self.decay = config["admins"], config["decay"]
+    self.chance, self.ignored = config['chance'], config['ignored']
+    self.queuelen, self.queueminlen = config['queuelen'], config['queueminlen']
     
   def on_nicknameinuse(self, c, e):
     c.nick(c.get_nickname() + "_")
@@ -72,8 +76,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
       if len(args) > 1:
         if nick in self.admins and args[1] == "reload":
           self.reload()
-          self.chan_msg(c, "Reloaded commands.")
-          self.chan_msg(c, ", ".join(self.commands.keys()))
+          self.chan_msg(c, "Reloaded.")
           return
         if args[1] in self.commands:
           target = self.commands[args[1]]
@@ -99,7 +102,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
     return {"_source": ["body"],
             "query":
             {"filtered": {"query": {"function_score": {"query": {"match": {"body": message}},
-                                                       "functions": [{"gauss": {"numid": {"origin": 1,
+                                                       "functions": [{"gauss": {"numid": {"decay": self.decay,
+                                                                                          "origin": 1,
                                                                                           "offset": 1,
                                                                                           "scale": math.floor(self.numid/
                                                                                                               2)}}},
