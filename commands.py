@@ -9,7 +9,7 @@ def search(parent, c, args):
                "query": {"multi_match": {"query": message,
                                          "fields": ["body",
                                                     "nick"]}},
-               "filter": {"not": {"terms": {"nick": self.ignored}}}}}}
+               "filter": {"not": {"terms": {"nick": parent.ignored}}}}}}
     result = parent.es.search(query, index=parent.index, size=5)
     hits = result["hits"]["hits"]
     total = result["hits"]["total"]
