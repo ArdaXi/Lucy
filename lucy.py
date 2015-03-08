@@ -72,6 +72,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
       if len(args) > 1:
         if nick in self.admins and args[1] == "reload":
           self.reload()
+          self.chan_msg(c, "Reloaded commands.")
+          self.chan_msg(c, ", ".join(self.commands.keys()))
           return
         if args[1] in self.commands:
           target = self.commands[args[1]]
