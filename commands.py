@@ -41,8 +41,8 @@ def lastmsg(parent, c, args):
     source = result["_source"]
     body, date, nick = source["body"], source["date"], source["nick"]
     timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
-    msg = "{:%Y-%m-%d %H:%M} <{}> {}".format(timestamp, nick,
-                                             body)
+    msg = "{} {:%Y-%m-%d %H:%M} <{}> {}".format(parent.lastmsg, timestamp,
+                                                nick, body)
     parent.chan_msg(c, msg)
   except:
     logger.exception("Failed ES")
