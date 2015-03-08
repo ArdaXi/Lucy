@@ -54,8 +54,7 @@ def context(parent, c, args):
   try:
     result = parent.es.get(parent.index, "message", id,
                            fields="numid")
-    source = result["_source"]
-    numid = source["numid"]
+    numid = result["fields"]["numid"][0]
     query = {"filter": {"range": {"numid": {"gte": numid-3,
                                             "lte": numid+3}}}}
     result = parent.es.search(query, index=parent.index)
