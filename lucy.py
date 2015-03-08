@@ -121,16 +121,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
                                        {"range": {"date":
                                                    {"gt": "now-1d"}}}]}}}}}
 
-  def say_searchquery(self, c, messages):
-    message = " ".join(messages).replace(c.get_nickname(), '')
-    query = self.searchquery(message)
-    subquery = query["query"]["filtered"]["query"]
-    filter = query["query"]["filtered"]["filter"]
-    self.chan_msg(c, '{"query": {"filtered": {')
-    self.chan_msg(c, '"query": {},'.format(json.dumps(subquery)))
-    self.chan_msg(c, '"filter": {}'.format(json.dumps(filter)))
-    self.chan_msg(c, '}}}')
-
   def search(self, c, messages):
     message = " ".join(messages).replace(c.get_nickname(), '')
     try:
