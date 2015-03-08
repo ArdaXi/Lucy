@@ -40,7 +40,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
     self.logger = logging.getLogger("Lucy")
-    self.queue = deque(maxlen=self.queuelen)
     self.counter, self.lastmsg = 0, 0
     self.mention_lock = Lock()
 
@@ -57,6 +56,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.admins, self.decay = config["admins"], config["decay"]
     self.chance, self.ignored = config['chance'], config['ignored']
     self.queuelen, self.queueminlen = config['queuelen'], config['queueminlen']
+    if self.queue:
+      self.queue = deque(self.queue, self.queuelen)
+    else:
+      self.queue = deque(maxlen=self.queuelen)
     
   def on_nicknameinuse(self, c, e):
     c.nick(c.get_nickname() + "_")
