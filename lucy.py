@@ -1,6 +1,7 @@
 from datetime import datetime
 from threading import Thread, Lock
 from collections import deque
+from inspect import getmembers, isfunction
 import irc.bot
 import json
 import pyelasticsearch
@@ -9,6 +10,8 @@ import re
 import logging
 import time
 import math
+
+import commands
 
 strip_pattern = re.compile("[^\w ']+", re.UNICODE)
 logging.basicConfig(level=logging.INFO)
@@ -39,6 +42,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.queue = deque(maxlen=self.queuelen)
     self.counter, self.lastmsg = 0, 0
     self.mention_lock = Lock()
+    self.commands = dict(getmembers(commands, self.is_public_function))
+
+  def is_public_function(self, o):
+    return isfunction(o) and not o.__name__.startswith('_')
     
   def on_nicknameinuse(self, c, e):
     c.nick(c.get_nickname() + "_")
@@ -55,27 +62,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
       self.counter += 1
     if args[0].strip(",:") == c.get_nickname():
       if len(args) > 1:
-        if args[1] == "search":
-          Thread(target=self.usersearch,
-                 args=(c, " ".join(args[2:]))).start()
+        if args[1] in self.commands:
+          target = self.commands[args[1]]
+          Thread(target=target, args=(self, c, args[2:])).start()
           return
-        if args[1] == "lastmsg":
-          Thread(target=self.getlastmsg, args=(c,)).start()
-          return
-        if args[1] == "when":
-          if len(args) > 3:
-            Thread(target=self.when, args=(c, args[2], " ".join(args[3:]))).start()
-            return
-        if args[1] == "context":
-          id = args[2] if len(args) > 2 else None
-          Thread(target=self.context, args=(c,id)).start()
-          return
-        if args[1] == "contextquery":
-          id = args[2] if len(args) > 2 else None
-          Thread(target=self.say_contextquery, args=(c,id)).start()
-          return
-        if args[1] == "searchquery":
-          Thread(target=self.say_searchquery, args=(c, list(self.queue))).start()
     if c.get_nickname() in message or (self.counter >= self.queueminlen and
                                        len(self.queue) >= self.queueminlen and
                                        random.random() < self.chance):
