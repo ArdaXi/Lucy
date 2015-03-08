@@ -135,32 +135,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
       self.es.update(self.index, "message", id, script)
       time.sleep(1)
 
-  def usersearch(self, c, message):
-    try:
-      query = {"query": {"filtered": {
-                 "query": {"multi_match": {"query": message,
-                                           "fields": ["body",
-                                                      "nick"]}},
-                 "filter": {"not": {"terms": {"nick": self.ignored}}}}}}
-      result = self.es.search(query, index=self.index, size=5)
-      hits = result["hits"]["hits"]
-      total = result["hits"]["total"]
-      self.sayhits(c, hits, total)
-    except:
-      self.logger.exception("Failed ES")
-
-  def when(self, c, nick, message):
-    try:
-      nick = nick.lower()
-      query = {"query": {"filtered": {"query": {"match": {"body": message}},
-                                      "filter": {"term": {"nick": nick}}}}}
-      result = self.es.search(query, index=self.index, size=5)
-      hits = result["hits"]["hits"]
-      total = result["hits"]["total"]
-      self.sayhits(c, hits, total)
-    except:
-      self.logger.exception("Failed ES")
-
   def sayhits(self, c, hits, total):
     if total > len(hits):
       self.chan_msg(c, "{} results, showing {}.".format(total, len(hits)))
@@ -179,54 +153,6 @@ class Lucy(irc.bot.SingleServerIRCBot):
                                                           timestamp, nick,
                                                           body)
       self.chan_msg(c, msg)
-
-  def getlastmsg(self, c):
-    if self.lastmsg == 0:
-      self.chan_msg(c, "I haven't even said anything!")
-      return
-    try:
-      result = self.es.get(self.index, "message", self.lastmsg)
-      source = result["_source"]
-      body, date, nick = source["body"], source["date"], source["nick"]
-      timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
-      msg = "{:%Y-%m-%d %H:%M} <{}> {}".format(timestamp, nick,
-                                               body)
-      self.chan_msg(c, msg)
-    except:
-      self.logger.exception("Failed ES")
-
-  def contextquery(self, c, id):
-    lastmsg = id if id else self.lastmsg
-    if lastmsg == 0:
-      self.chan_msg(c, "I haven't even said anything!")
-      return
-    try:
-      result = self.es.get(self.index, "message", lastmsg)
-      source = result["_source"]
-      numid = source["numid"]
-      query = {"filter": {"range": {"numid": {"gte": numid-3,
-                                              "lte": numid+3}}}}
-      return query
-    except:
-      self.logger.exception("Failed ES")
-
-  def say_contextquery(self, c, id):
-    query = self.contextquery(c, id)
-    self.chan_msg(c, json.dumps(query))
-
-  def context(self, c, id):
-    try:
-      query = self.contextquery(c, id)
-      result = self.es.search(query, index=self.index)
-      hits = sorted(result["hits"]["hits"],
-                    key=self.numid_from_hit)
-      total = result["hits"]["total"]
-      self.sayhits(c, hits, total)
-    except:
-      self.logger.exception("Failed ES")
-
-  def numid_from_hit(self, hit):
-    return hit["_source"]["numid"]
 
   def log(self, nick, message):
     doc = {'numid': self.numid, 'date': datetime.now().isoformat(),
