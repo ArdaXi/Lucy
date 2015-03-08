@@ -2,6 +2,7 @@ from datetime import datetime
 from threading import Thread, Lock
 from collections import deque
 from inspect import getmembers, isfunction
+from importlib import reload
 import irc.bot
 import json
 import pyelasticsearch
@@ -36,16 +37,22 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.channel, self.index = config['channel'], config['index']
     self.chance, self.ignored = config['chance'], config['ignored']
     self.queuelen, self.queueminlen = config['queuelen'], config['queueminlen']
+    self.admins = config["admins"]
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
     self.logger = logging.getLogger("Lucy")
     self.queue = deque(maxlen=self.queuelen)
     self.counter, self.lastmsg = 0, 0
     self.mention_lock = Lock()
-    self.commands = dict(getmembers(commands, self.is_public_function))
+    self.reload()
 
   def is_public_function(self, o):
     return isfunction(o) and not o.__name__.startswith('_')
+
+  def reload(self):
+    self.commands = {}
+    reload(commands)
+    self.commands = dict(getmembers(commands, self.is_public_function))
     
   def on_nicknameinuse(self, c, e):
     c.nick(c.get_nickname() + "_")
@@ -54,14 +61,18 @@ class Lucy(irc.bot.SingleServerIRCBot):
     c.join(self.channel)
 
   def on_pubmsg(self, c, e):
+    nick = e.source.nick
     message = " ".join(e.arguments)
     args = message.split(" ")
-    self.log(e.source.nick, message)
-    if e.source.nick.lower() not in self.ignored:
+    self.log(nick, message)
+    if nick.lower() not in self.ignored:
       self.queue.append(strip_pattern.sub(' ', message))
       self.counter += 1
     if args[0].strip(",:") == c.get_nickname():
       if len(args) > 1:
+        if nick in self.admins and args[1] == "reload":
+          self.reload()
+          return
         if args[1] in self.commands:
           target = self.commands[args[1]]
           Thread(target=target, args=(self, c, args[2:])).start()
