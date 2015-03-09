@@ -34,6 +34,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     with open(configfile) as f:
       config = json.load(f)
     server, port, nick = config['server'], config['port'], config['nick']
+    self.queue = None
     self.reload(config)
     irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nick, nick)
     self.connection.buffer_class = IgnoreErrorsBuffer
