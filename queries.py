@@ -1,5 +1,16 @@
 import math
 
+def usersearch(message, ignored):
+  return {"query": {"filtered": {
+            "query": {"multi_match": {"query": message,
+                                      "fields": ["body",
+                                                 "nick"]}},
+            "filter": {"not": {"terms": {"nick": ignored}}}}}}
+
+def when(nick, message):
+  return {"query": {"filtered": {"query": {"match": {"body": message}},
+                                 "filter": {"term": {"nick": nick}}}}}
+
 def search(message, decay, numid, ignored):
   return { "_source": ["body"],
            "query": {

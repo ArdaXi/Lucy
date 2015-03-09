@@ -1,16 +1,14 @@
 import logging
 from datetime import datetime
 
+import queries
+
 logger = logging.getLogger(__name__)
 
 def search(parent, c, args):
   message = " ".join(args)
   try:
-    query = {"query": {"filtered": {
-               "query": {"multi_match": {"query": message,
-                                         "fields": ["body",
-                                                    "nick"]}},
-               "filter": {"not": {"terms": {"nick": parent.ignored}}}}}}
+    query = queries.usersearch(message, parent.ignored)
     result = parent.es.search(query, index=parent.index, size=5)
     hits = result["hits"]["hits"]
     total = result["hits"]["total"]
@@ -24,8 +22,7 @@ def when(parent, c, args):
   try:
     nick = args[0].lower()
     message = " ".join(args[1:])
-    query = {"query": {"filtered": {"query": {"match": {"body": message}},
-                                    "filter": {"term": {"nick": nick}}}}}
+    query = queries.when(nick, message)
     result = parent.es.search(query, index=parent.index, size=5)
     hits = result["hits"]["hits"]
     total = result["hits"]["total"]
