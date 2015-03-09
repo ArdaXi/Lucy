@@ -53,8 +53,7 @@ def context(parent, c, args):
     result = parent.es.get(parent.index, "message", id,
                            fields="numid")
     numid = result["fields"]["numid"][0]
-    query = {"filter": {"range": {"numid": {"gte": numid-3,
-                                            "lte": numid+3}}}}
+    query = queries.context(numid) 
     result = parent.es.search(query, index=parent.index)
     hits = sorted(result["hits"]["hits"],
                   key=_numid_from_hit)

@@ -11,6 +11,10 @@ def when(nick, message):
   return {"query": {"filtered": {"query": {"match": {"body": message}},
                                  "filter": {"term": {"nick": nick}}}}}
 
+def context(numid):
+  return {"filter": {"range": {"numid": {"gte": numid-3,
+                                         "lte": numid+3}}}}
+
 def search(message, decay, numid, ignored):
   return { "_source": ["body"],
            "query": {
