@@ -11,6 +11,8 @@ import re
 import logging
 import time
 import math
+import os
+import git
 
 import commands
 import queries
@@ -35,6 +37,11 @@ class Lucy(irc.bot.SingleServerIRCBot):
       config = json.load(f)
     server, port, nick = config['server'], config['port'], config['nick']
     self.queue = None
+    try:
+      self.git = git.Repo(os.getcwd()).git
+    except git.InvalidGitRepositoryError:
+      self.logger.exception("Failed git")
+      self.git = None
     self.reload(config)
     irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nick, nick)
     self.connection.buffer_class = IgnoreErrorsBuffer
@@ -49,6 +56,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
     return isfunction(o) and not o.__name__.startswith('_')
 
   def reload(self, config=None):
+    if self.git:
+      self.git.pull()
     self.commands = {}
     reload(commands)
     self.commands = dict(getmembers(commands, self.is_public_function))
