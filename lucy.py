@@ -10,7 +10,6 @@ import random
 import re
 import logging
 import time
-import math
 import os
 import git
 
