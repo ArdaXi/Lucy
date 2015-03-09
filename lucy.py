@@ -13,6 +13,7 @@ import time
 import math
 
 import commands
+import queries
 
 strip_pattern = re.compile("[^\w ']+", re.UNICODE)
 logging.basicConfig(level=logging.INFO)
@@ -50,6 +51,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.commands = {}
     reload(commands)
     self.commands = dict(getmembers(commands, self.is_public_function))
+    reload(queries)
     if not config:
       with open(self.configfile) as f:
         config = json.load(f)
@@ -102,29 +104,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
     c.privmsg(self.channel, message)
     self.log(c.get_nickname(), message)
 
-  def searchquery(self, message):
-    return {"_source": ["body"],
-            "query":
-            {"filtered": {"query": {"function_score": {"query": {"match": {"body": message}},
-                                                       "functions": [{"gauss": {"numid": {"decay": self.decay,
-                                                                                          "origin": 1,
-                                                                                          "offset": 1,
-                                                                                          "scale": math.floor(self.numid/
-                                                                                                              2)}}},
-                                                                     {"linear": {"mentions": {"origin": 0,
-                                                                                              "scale": 1}}}]}},
-                          "filter": {"bool": {
-                                      "must_not": [
-                                       {"terms": {"nick": self.ignored}},
-                                       {"range": {"numid":
-                                                   {"gte": self.numid-1000}}},
-                                       {"range": {"date":
-                                                   {"gt": "now-1d"}}}]}}}}}
-
   def search(self, c, messages):
     message = " ".join(messages).replace(c.get_nickname(), '')
     try:
-      query = self.searchquery(message)
+      query = queries.search(message, self.decay, self.numid, self.ignored)
       with self.mention_lock:
         result = self.es.search(query, index=self.index)
       for hit in result["hits"]["hits"]:

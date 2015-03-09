@@ -1,0 +1,58 @@
+import math
+
+def search(message, decay, numid, ignored):
+  return { "_source": ["body"],
+           "query": {
+             "filtered": {
+               "query": {
+                 "function_score": {
+                   "query": {
+                     "match": {
+                       "body": message
+                     }
+                   },
+                   "functions": [{
+                     "gauss": {
+                       "numid": {
+                         "decay": decay,
+                         "origin": 1,
+                         "offset": 1,
+                         "scale": math.floor(numid / 2)
+                       }
+                     }
+                   }, {
+                     "linear": {
+                       "mentions": {
+                         "origin": 0,
+                         "scale": 1
+                       }
+                     }
+                   }]
+                 }
+               },
+               "filter": {
+                 "bool": {
+                   "must_not": [{
+                     "terms": {
+                       "nick": ignored
+                     }
+                   }, {
+                     "range": {
+                       "numid": {
+                         "gte": numid - 1000
+                       }
+                     }
+                   }, {
+                     "range": {
+                       "date": {
+                         "gt": "now-1d"
+                       }
+                     }
+                   }]
+                 }
+               }
+             }
+           }
+         }
+          
+# vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab
