@@ -123,9 +123,9 @@ class Lucy(irc.bot.SingleServerIRCBot):
         score, source, id = hit["_score"], hit["_source"], hit["_id"]
         body = source["body"]
         self.logger.info("'{}' has score {}".format(body, score))
-        self.lastmsg = id
         time.sleep(body.count(" ") * 0.2 + 0.5)
         self.chan_msg(c, body)
+        self.lastmsg = id
         self.incrementmsg(id)
         return
     except:
