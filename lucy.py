@@ -3,6 +3,7 @@ from threading import Thread, Lock
 from collections import deque
 from inspect import getmembers, isfunction
 from importlib import reload
+from irc.client import MessageTooLong
 import irc.bot
 import json
 import pyelasticsearch
@@ -110,8 +111,12 @@ class Lucy(irc.bot.SingleServerIRCBot):
     pass
 
   def chan_msg(self, c, message):
-    c.privmsg(self.channel, message)
-    self.log(c.get_nickname(), message)
+    try:
+      c.privmsg(self.channel, message)
+      self.log(c.get_nickname(), message)
+    except MessageTooLong:
+      message = message[:511]
+      self.chan_msg(c, message)
 
   def search(self, c, messages):
     message = " ".join(messages).replace(c.get_nickname(), '')
