@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from irc.client import MessageTooLong
 
 import queries
 
@@ -41,7 +42,12 @@ def lastmsg(parent, c, args):
     timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
     msg = "{} {:%Y-%m-%d %H:%M} <{}> {}".format(parent.lastmsg, timestamp,
                                                 nick, body)
-    parent.chan_msg(c, msg)
+    try:
+      parent.chan_msg(c, msg)
+    except MessageTooLong:
+      msg = "{} {:%Y-%m-%d %H:%M} <{}>".format(parent.lastmsg, timestamp,
+                                               nick)
+      parent.chan_msg(c, msg)
   except:
     logger.exception("Failed ES")
 
