@@ -69,7 +69,7 @@ def context(parent, c, args):
     logger.exception("Failed ES")
 
 def who(parent, c, args):
-  query = queries.who(" ".join(args))
+  query = queries.who(" ".join(args), parent.ignored)
   result = parent.es.search(query, index=parent.index, es_search_type="count")
   total = result["hits"]["total"]
   buckets = result["aggregations"]["nicks"]["buckets"]

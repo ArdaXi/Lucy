@@ -70,8 +70,10 @@ def search(message, decay, numid, ignored):
            }
          }
 
-def who(message):
-  return { "query": {"match": {"body": message}}, 
+def who(message, ignored):
+  return { "query": {"filtered": { "query": {"match": {"body": message}},
+                                   "filter": {
+                                     "not": {"terms": {"nick": ignored}}}}},
            "aggs": { "nicks": {"terms": {"field": "nick"}}}}
 
 # vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab
