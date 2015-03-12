@@ -69,5 +69,9 @@ def search(message, decay, numid, ignored):
              }
            }
          }
-          
+
+def who(message):
+  return { "query": {"match": {"body": message}}, 
+           "aggs": { "nicks": {"terms": {"field": "nick"}}}}
+
 # vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab

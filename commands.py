@@ -68,6 +68,16 @@ def context(parent, c, args):
   except:
     logger.exception("Failed ES")
 
+def who(parent, c, args):
+  query = queries.who(args)
+  result = parent.es.search(query, index=parent.index, es_search_type="count")
+  total = result["hits"]["total"]
+  buckets = result["aggregations"]["nicks"]["buckets"]
+  values = ["{}: {:%}".format(x["key"], x["doc_count"] / total)
+             for x in buckets]
+  msg = ", ".join(values)
+  parent.chan_msg(c, msg)
+
 def _numid_from_hit(hit):
   return hit["_source"]["numid"]
 
