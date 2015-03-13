@@ -77,6 +77,7 @@ def who(parent, c, args):
              for x in buckets]
   msg = ", ".join(values)
   parent.chan_msg(c, msg)
+  parent.chan_msg(c, "Total: {}".format(total))
 
 def _numid_from_hit(hit):
   return hit["_source"]["numid"]
