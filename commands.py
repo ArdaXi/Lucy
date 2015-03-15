@@ -75,7 +75,7 @@ def who(parent, c, args):
   total = result["hits"]["total"]
   buckets = result["aggregations"]["nicks"]["buckets"]
   values = ["{}: {:.0%}".format(x["key"], x["doc_count"] / total)
-             for x in buckets]
+             for x in buckets if x["doc_count"] / total > 0.01]
   msg = ", ".join(values)
   parent.chan_msg(c, msg)
   parent.chan_msg(c, "Total: {}".format(total))
