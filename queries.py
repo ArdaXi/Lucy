@@ -74,6 +74,7 @@ def who(message, ignored):
   if message:
     query = who(None, ignored)
     query["query"]["filtered"]["query"] = {"match": {"body": message}}
+    query["aggs"]["nicks"]["terms"]["min_doc_count"] = 1
     return query
   else:
     return { "query": {"filtered": { "filter": {
