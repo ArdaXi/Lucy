@@ -8,12 +8,28 @@ def usersearch(message, ignored):
             "filter": {"not": {"terms": {"nick": ignored}}}}}}
 
 def when(nick, message):
-  return {"query": {"filtered": {"query": {"match": {"body": message}},
-                                 "filter": {"term": {"nick": nick}}}}}
+  if message:
+    query = when(nick, None)
+    query["query"]["filtered"]["query"] = {"match": {"body": message}}
+    return query
+  else:
+    return {"query": {"filtered": {"filter": {"term": {"nick": nick}}}}}
 
 def context(numid):
   return {"filter": {"range": {"numid": {"gte": numid-3,
                                          "lte": numid+3}}}}
+
+def who(message, ignored):
+  if message:
+    query = who(None, ignored)
+    query["query"]["filtered"]["query"] = {"match": {"body": message}}
+    query["aggs"]["nicks"]["terms"]["min_doc_count"] = 1
+    return query
+  else:
+    return { "query": {"filtered": { "filter": {
+                                       "not": {"terms": {"nick": ignored}}}}},
+             "aggs": { "nicks": {"terms": {"field": "nick", "min_doc_count": 1000}}}}
+
 
 def search(message, decay, numid, ignored):
   return { "_source": ["body"],
@@ -69,16 +85,5 @@ def search(message, decay, numid, ignored):
              }
            }
          }
-
-def who(message, ignored):
-  if message:
-    query = who(None, ignored)
-    query["query"]["filtered"]["query"] = {"match": {"body": message}}
-    query["aggs"]["nicks"]["terms"]["min_doc_count"] = 1
-    return query
-  else:
-    return { "query": {"filtered": { "filter": {
-                                       "not": {"terms": {"nick": ignored}}}}},
-             "aggs": { "nicks": {"terms": {"field": "nick", "min_doc_count": 1000}}}}
 
 # vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab

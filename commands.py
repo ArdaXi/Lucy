@@ -18,8 +18,10 @@ def search(parent, c, args):
     logger.exception("Failed ES")
 
 def when(parent, c, args):
-  if len(args) < 2:
+  if not args:
     return
+  nick = args[0].lower()
+  message = " ".join(args[1:]) if len(args) > 1 else None
   try:
     nick = args[0].lower()
     message = " ".join(args[1:])
