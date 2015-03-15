@@ -72,12 +72,6 @@ def search(message, decay, numid, ignored):
                      }
                    }, {
                      "range": {
-                       "numid": {
-                         "gte": numid - 1000
-                       }
-                     }
-                   }, {
-                     "range": {
                        "date": {
                          "gt": "now-1d"
                        }
