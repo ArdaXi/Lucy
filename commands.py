@@ -71,7 +71,7 @@ def context(parent, c, args):
 def who(parent, c, args):
   message = " ".join(args) if args else None
   query = queries.who(message, parent.ignored)
-  result = parent.es.search(query, index=parent.index, es_search_type="count")
+  result = parent.es.search(query, index=parent.index, es_search_type="count", size=20)
   total = result["hits"]["total"]
   buckets = result["aggregations"]["nicks"]["buckets"]
   values = ["{}: {:.0%}".format(x["key"], x["doc_count"] / total)
