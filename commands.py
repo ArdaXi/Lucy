@@ -124,13 +124,10 @@ def _sayhits(parent, c, hits, total, took):
     if "highlight" in hit:
       body = hit["highlight"]["body"][0]
     timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
-    if score == 1.0:
-      msg = "{} {:%Y-%m-%d %H:%M} <{}> {}".format(id, timestamp,
-                                                  nick, body)
-    else:
-      msg = "{} {:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(id, score,
-                                                        timestamp, nick,
-                                                        body)
+    msg = "{} {:%Y-%m-%d %H:%M} <{}> {}".format(id, timestamp,
+                                                nick, body)
+    if score != 1.0:
+      msg = "\u00036{:.4}\u000F {}".format(score, msg)
     parent.chan_msg(c, msg)
 
 # vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab
