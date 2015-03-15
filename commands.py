@@ -127,7 +127,7 @@ def _sayhits(parent, c, hits, total, took):
     msg = "{} {:%Y-%m-%d %H:%M} <{}> {}".format(id, timestamp,
                                                 nick, body)
     if score != 1.0:
-      msg = "\u00036{:.4}\u000F {}".format(score, msg)
+      msg = "{:.4} {}".format(score, msg)
     parent.chan_msg(c, msg)
 
 # vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab
