@@ -72,13 +72,12 @@ def search(message, decay, numid, ignored):
 
 def who(message, ignored):
   if message:
-    return { "query": {"filtered": { "query": {"match": {"body": message}},
-                                     "filter": {
-                                       "not": {"terms": {"nick": ignored}}}}},
-             "aggs": { "nicks": {"terms": {"field": "nick"}}}}
+    query = who(None, ignored)
+    query["query"]["filtered"]["query"] = {"match": {"body": message}}
+    return query
   else:
     return { "query": {"filtered": { "filter": {
                                        "not": {"terms": {"nick": ignored}}}}},
-             "aggs": { "nicks": {"terms": {"field": "nick"}}}}
+             "aggs": { "nicks": {"terms": {"field": "nick", "size": 20}}}}
 
 # vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab
