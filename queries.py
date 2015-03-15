@@ -1,6 +1,6 @@
 import math
 
-highlight = {"pre_tags": ["_"], "post_tags": ["_"], "fields": {"body": {}}}
+highlight = {"pre_tags": ["\u0002"], "post_tags": ["\u0002"], "fields": {"body": {}}}
 
 def usersearch(message, ignored):
   return { "query": {"filtered": {
