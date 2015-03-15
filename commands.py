@@ -24,8 +24,6 @@ def when(parent, c, args):
   nick = args[0].lower()
   message = " ".join(args[1:]) if len(args) > 1 else None
   try:
-    nick = args[0].lower()
-    message = " ".join(args[1:])
     query = queries.when(nick, message)
     result = parent.es.search(query, index=parent.index, size=5)
     took = result["took"]
@@ -91,6 +89,21 @@ def regex(parent, c, args):
     hits = result["hits"]["hits"]
     total = result["hits"]["total"]
     parent.sayhits(c, hits, total, took)
+  except:
+    logger.exception("Failed ES")
+
+def significant(parent, c, args):
+  if not args:
+    return
+  try:
+    nick = args[0].lower()
+    query = queries.significant(nick)
+    result = parent.es.search(query, index=parent.index, es_search_type="count")
+    took = result["took"]
+    buckets = result["aggregations"]["most_sig"]["buckets"]
+    words = [x["key"] for x in buckets]
+    msg = ", ".join(words)
+    parent.chan_msg(c, msg)
   except:
     logger.exception("Failed ES")
 

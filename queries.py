@@ -33,6 +33,10 @@ def who(message, ignored):
 def regex(expression):
   return {"query": {"regexp": {"body": expression}}}
 
+def significant(nick):
+  return {"query": {"filtered": {"filter": {"term": {"nick": nick}}}},
+          "aggs": {"most_sig": {"significant_terms": {"field": "body"}}}}
+
 
 def search(message, decay, numid, ignored):
   return { "_source": ["body"],
