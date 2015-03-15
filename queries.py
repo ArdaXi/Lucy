@@ -1,11 +1,13 @@
 import math
 
 def usersearch(message, ignored):
-  return {"query": {"filtered": {
-            "query": {"multi_match": {"query": message,
-                                      "fields": ["body",
-                                                 "nick"]}},
-            "filter": {"not": {"terms": {"nick": ignored}}}}}}
+  return { "query": {"filtered": {
+             "query": {"multi_match": {"query": message,
+                                       "fields": ["body",
+                                                  "nick"]}},
+             "filter": {"not": {"terms": {"nick": ignored}}}}},
+           "highlight": {"pre_tags": ["_"], "post_tags": ["_"],
+                         "fields": {"body": {}}}}
 
 def when(nick, message):
   if message:
