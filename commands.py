@@ -14,7 +14,7 @@ def search(parent, c, args):
     took = result["took"]
     hits = result["hits"]["hits"]
     total = result["hits"]["total"]
-    parent.sayhits(c, hits, total, took)
+    _sayhits(parent, c, hits, total, took)
   except:
     logger.exception("Failed ES")
 
@@ -29,7 +29,7 @@ def when(parent, c, args):
     took = result["took"]
     hits = result["hits"]["hits"]
     total = result["hits"]["total"]
-    parent.sayhits(c, hits, total, took)
+    _sayhits(parent, c, hits, total, took)
   except:
     logger.exception("Failed ES")
 
@@ -62,7 +62,7 @@ def context(parent, c, args):
     hits = sorted(result["hits"]["hits"],
                   key=_numid_from_hit)
     total = result["hits"]["total"]
-    parent.sayhits(c, hits, total, took)
+    _sayhits(parent, c, hits, total, took)
   except:
     logger.exception("Failed ES")
 
@@ -88,7 +88,7 @@ def regex(parent, c, args):
     took = result["took"]
     hits = result["hits"]["hits"]
     total = result["hits"]["total"]
-    parent.sayhits(c, hits, total, took)
+    _sayhits(parent, c, hits, total, took)
   except:
     logger.exception("Failed ES")
 
@@ -109,5 +109,28 @@ def significant(parent, c, args):
 
 def _numid_from_hit(hit):
   return hit["_source"]["numid"]
+
+
+def _sayhits(parent, c, hits, total, took):
+  if total > len(hits):
+    parent.chan_msg(c, "{} results, showing {}. ({} ms)".format(total,
+                                                                len(hits),
+                                                                took))
+  else:
+    parent.chan_msg(c, "{} results. ({} ms)".format(total, took))
+  for hit in hits:
+    score, source, id = hit["_score"], hit["_source"], hit["_id"]
+    body, date, nick = source["body"], source["date"], source["nick"]
+    if "highlight" in hit:
+      body = hit["highlight"]["body"][0]
+    timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
+    if score == 1.0:
+      msg = "{} {:%Y-%m-%d %H:%M} <{}> {}".format(id, timestamp,
+                                                  nick, body)
+    else:
+      msg = "{} {:.4} {:%Y-%m-%d %H:%M} <{}> {}".format(id, score,
+                                                        timestamp, nick,
+                                                        body)
+    parent.chan_msg(c, msg)
 
 # vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab
