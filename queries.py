@@ -1,18 +1,20 @@
 import math
 
+highlight = {"pre_tags": ["_"], "post_tags": ["_"], "fields": {"body": {}}}
+
 def usersearch(message, ignored):
   return { "query": {"filtered": {
              "query": {"multi_match": {"query": message,
                                        "fields": ["body",
                                                   "nick"]}},
              "filter": {"not": {"terms": {"nick": ignored}}}}},
-           "highlight": {"pre_tags": ["_"], "post_tags": ["_"],
-                         "fields": {"body": {}}}}
+           "highlight": highlight}
 
 def when(nick, message):
   if message:
     query = when(nick, None)
     query["query"]["filtered"]["query"] = {"match": {"body": message}}
+    query["highlight"] = highlight
     return query
   else:
     return {"query": {"filtered": {"filter": {"term": {"nick": nick}}}}}
