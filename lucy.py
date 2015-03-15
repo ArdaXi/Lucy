@@ -154,6 +154,8 @@ class Lucy(irc.bot.SingleServerIRCBot):
     for hit in hits:
       score, source, id = hit["_score"], hit["_source"], hit["_id"]
       body, date, nick = source["body"], source["date"], source["nick"]
+      if "highlight" in hit:
+        body = hit["highlight"]["body"][0]
       timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
       if score == 1.0:
         msg = "{} {:%Y-%m-%d %H:%M} <{}> {}".format(id, timestamp,
