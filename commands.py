@@ -44,12 +44,7 @@ def lastmsg(parent, c, args):
     timestamp = datetime.strptime(date.split(".")[0], "%Y-%m-%dT%H:%M:%S")
     msg = "{} {:%Y-%m-%d %H:%M} <{}> {}".format(parent.lastmsg, timestamp,
                                                 nick, body)
-    try:
-      parent.chan_msg(c, msg)
-    except MessageTooLong:
-      msg = "{} {:%Y-%m-%d %H:%M} <{}>".format(parent.lastmsg, timestamp,
-                                               nick)
-      parent.chan_msg(c, msg)
+    parent.chan_msg(c, msg)
   except:
     logger.exception("Failed ES")
 
