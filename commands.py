@@ -21,7 +21,7 @@ def search(parent, c, args):
 def when(parent, c, args):
   if not args:
     return
-  nick = args[0].lower()
+  nick = args[0]
   message = " ".join(args[1:]) if len(args) > 1 else None
   try:
     query = queries.when(nick, message)
@@ -96,7 +96,7 @@ def significant(parent, c, args):
   if not args:
     return
   try:
-    nick = args[0].lower()
+    nick = args[0]
     query = queries.significant(nick)
     result = parent.es.search(query, index=parent.index, es_search_type="count")
     took = result["took"]
