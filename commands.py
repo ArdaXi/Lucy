@@ -66,16 +66,19 @@ def context(parent, c, args):
     logger.exception("Failed ES")
 
 def who(parent, c, args):
-  message = " ".join(args) if args else None
-  query = queries.who(message, parent.ignored)
-  result = parent.es.search(query, index=parent.index, es_search_type="count", size=20)
-  total = result["hits"]["total"]
-  buckets = result["aggregations"]["nicks"]["buckets"]
-  values = ["{}: {:.0%}".format(x["key"], x["doc_count"] / total)
-             for x in buckets if x["doc_count"] / total > 0.01]
-  msg = ", ".join(values)
-  parent.chan_msg(c, msg)
-  parent.chan_msg(c, "Total: {}".format(total))
+  try:
+    message = " ".join(args) if args else None
+    query = queries.who(message, parent.ignored)
+    result = parent.es.search(query, index=parent.index, es_search_type="count", size=20)
+    total = result["hits"]["total"]
+    buckets = result["aggregations"]["nicks"]["buckets"]
+    values = ["{}: {:.0%}".format(x["key"], x["doc_count"] / total)
+               for x in buckets if x["doc_count"] / total > 0.01]
+    msg = ", ".join(values)
+    parent.chan_msg(c, msg)
+    parent.chan_msg(c, "Total: {}".format(total))
+  except:
+    logger.exception("Failed ES")
 
 def _numid_from_hit(hit):
   return hit["_source"]["numid"]
