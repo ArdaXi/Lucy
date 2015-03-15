@@ -11,9 +11,10 @@ def search(parent, c, args):
   try:
     query = queries.usersearch(message, parent.ignored)
     result = parent.es.search(query, index=parent.index, size=5)
+    took = result["took"]
     hits = result["hits"]["hits"]
     total = result["hits"]["total"]
-    parent.sayhits(c, hits, total) 
+    parent.sayhits(c, hits, total, took)
   except:
     logger.exception("Failed ES")
 
@@ -27,9 +28,10 @@ def when(parent, c, args):
     message = " ".join(args[1:])
     query = queries.when(nick, message)
     result = parent.es.search(query, index=parent.index, size=5)
+    took = result["took"]
     hits = result["hits"]["hits"]
     total = result["hits"]["total"]
-    parent.sayhits(c, hits, total)
+    parent.sayhits(c, hits, total, took)
   except:
     logger.exception("Failed ES")
 
@@ -58,10 +60,11 @@ def context(parent, c, args):
     numid = result["fields"]["numid"][0]
     query = queries.context(numid) 
     result = parent.es.search(query, index=parent.index)
+    took = result["took"]
     hits = sorted(result["hits"]["hits"],
                   key=_numid_from_hit)
     total = result["hits"]["total"]
-    parent.sayhits(c, hits, total)
+    parent.sayhits(c, hits, total, took)
   except:
     logger.exception("Failed ES")
 
@@ -84,9 +87,10 @@ def regex(parent, c, args):
   try:
     query = queries.regex(args[0])
     result = parent.es.search(query, index=parent.index, size=5)
+    took = result["took"]
     hits = result["hits"]["hits"]
     total = result["hits"]["total"]
-    parent.sayhits(c, hits, total)
+    parent.sayhits(c, hits, total, took)
   except:
     logger.exception("Failed ES")
 

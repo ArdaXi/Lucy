@@ -143,11 +143,13 @@ class Lucy(irc.bot.SingleServerIRCBot):
       self.es.update(self.index, "message", id, script)
       time.sleep(1)
 
-  def sayhits(self, c, hits, total):
+  def sayhits(self, c, hits, total, took):
     if total > len(hits):
-      self.chan_msg(c, "{} results, showing {}.".format(total, len(hits)))
+      self.chan_msg(c, "{} results, showing {}. ({} ms)".format(total,
+                                                                len(hits),
+                                                                took))
     else:
-      self.chan_msg(c, "{} results.".format(total))
+      self.chan_msg(c, "{} results. ({} ms)".format(total, took))
     error = False
     for hit in hits:
       score, source, id = hit["_score"], hit["_source"], hit["_id"]
