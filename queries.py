@@ -78,6 +78,6 @@ def who(message, ignored):
   else:
     return { "query": {"filtered": { "filter": {
                                        "not": {"terms": {"nick": ignored}}}}},
-             "aggs": { "nicks": {"terms": {"field": "nick", "size": 20}}}}
+             "aggs": { "nicks": {"terms": {"field": "nick", "min_doc_count": 1000}}}}
 
 # vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab
