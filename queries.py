@@ -30,6 +30,9 @@ def who(message, ignored):
                                        "not": {"terms": {"nick": ignored}}}}},
              "aggs": { "nicks": {"terms": {"field": "nick", "min_doc_count": 1000}}}}
 
+def regex(expression):
+  return {"query": {"regexp": {"body": expression}}}
+
 
 def search(message, decay, numid, ignored):
   return { "_source": ["body"],

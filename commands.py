@@ -80,6 +80,16 @@ def who(parent, c, args):
   except:
     logger.exception("Failed ES")
 
+def regex(parent, c, args):
+  try:
+    query = queries.regex(args[0])
+    result = parent.es.search(query, index=parent.index)
+    hits = result["hits"]["hits"]
+    total = result["hits"]["total"]
+    parent.sayhits(c, hits, total)
+  except:
+    logger.exception("Failed ES")
+
 def _numid_from_hit(hit):
   return hit["_source"]["numid"]
 
