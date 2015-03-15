@@ -83,7 +83,7 @@ def who(parent, c, args):
 def regex(parent, c, args):
   try:
     query = queries.regex(args[0])
-    result = parent.es.search(query, index=parent.index)
+    result = parent.es.search(query, index=parent.index, size=5)
     hits = result["hits"]["hits"]
     total = result["hits"]["total"]
     parent.sayhits(c, hits, total)
