@@ -44,7 +44,6 @@ def significant(nick):
 
 def search(message, decay, numid, ignored):
   return { "_source": ["body"],
-           "highlight": highlight,
            "query": {
              "filtered": {
                "query": {
