@@ -126,7 +126,10 @@ class Lucy(irc.bot.SingleServerIRCBot):
         result = self.es.search(query, index=self.index)
       for hit in result["hits"]["hits"]:
         score, source, id = hit["_score"], hit["_source"], hit["_id"]
-        body = source["body"]
+        if "highlight" in hit:
+          body = hit["highlight"]["body"][0]
+        else:
+          body = source["body"]
         self.logger.info("'{}' has score {}".format(body, score))
         time.sleep(body.count(" ") * 0.2 + 0.5)
         self.chan_msg(c, body)
