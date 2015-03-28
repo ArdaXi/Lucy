@@ -20,11 +20,11 @@ def search(parent, c, args):
 
 def explain(parent, c, args):
   try:
-    logger.info(parent.lastquery)
     result = parent.es.send_request("GET", [parent.index, "message",
                                             parent.lastmsg, "_explain"],
                                     parent.lastquery, {})
-    if not result["matches"]:
+    logger.info(result) 
+    if not "matches" in result:
       parent.chan_msg(c, "Universe broken, please destroy and try again.")
     expl = result["explanation"]
     msg = "{:.2} {}".format(expl["value"], expl["description"])
