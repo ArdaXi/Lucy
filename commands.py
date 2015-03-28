@@ -27,10 +27,10 @@ def explain(parent, c, args):
     if not result["matched"]:
       parent.chan_msg(c, "Universe broken, please destroy and try again.")
     expl = result["explanation"]
-    msg = "{:.2} {}".format(expl["value"], expl["description"])
+    msg = "{:.02} {}".format(expl["value"], expl["description"])
     parent.chan_msg(c, msg)
     for expl in expl["details"]:
-      msg = "{:.2} {}".format(expl["value"], expl["description"])
+      msg = "{:.02} {}".format(expl["value"], expl["description"])
       parent.chan_msg(c, msg)
   except:
     logger.exception("Failed ES")
