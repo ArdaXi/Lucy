@@ -24,7 +24,7 @@ def explain(parent, c, args):
                                             parent.lastmsg, "_explain"],
                                     parent.lastquery, {})
     logger.info(result) 
-    if not "matches" in result:
+    if not result["matched"]:
       parent.chan_msg(c, "Universe broken, please destroy and try again.")
     expl = result["explanation"]
     msg = "{:.2} {}".format(expl["value"], expl["description"])
