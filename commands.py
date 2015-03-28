@@ -20,6 +20,7 @@ def search(parent, c, args):
 
 def explain(parent, c, args):
   try:
+    logger.info(parent.lastquery)
     result = parent.es.send_request("GET", [parent.index, "message",
                                             parent.lastmsg, "_explain"],
                                     parent.lastquery, {})
