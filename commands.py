@@ -18,6 +18,22 @@ def search(parent, c, args):
   except:
     logger.exception("Failed ES")
 
+def explain(parent, c, args):
+  try:
+    result = parent.es.send_request("GET", [parent.index, "message",
+                                            parent.lastmsg, "_explain"],
+                                    parent.lastquery)
+    if not result["matches"]:
+      parent.chan_msg(c, "Universe broken, please destroy and try again.")
+    expl = result["explanation"]
+    msg = "{:.2} {}".format(expl["value"], expl["description"])
+    parent.chan_msg(c, msg)
+    for expl in expl["details"]:
+      msg = "{:.2} {}".format(expl["value"], expl["description"])
+      parent.chan_msg(c, msg)
+  except:
+    logger.exception("Failed ES")
+
 def when(parent, c, args):
   if not args:
     return
