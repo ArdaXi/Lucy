@@ -22,7 +22,7 @@ def explain(parent, c, args):
   try:
     result = parent.es.send_request("GET", [parent.index, "message",
                                             parent.lastmsg, "_explain"],
-                                    parent.lastquery)
+                                    parent.lastquery, {})
     if not result["matches"]:
       parent.chan_msg(c, "Universe broken, please destroy and try again.")
     expl = result["explanation"]
