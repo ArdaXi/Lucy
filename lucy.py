@@ -50,6 +50,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     self.numid = self.es.count("*", index=self.index)['count']
     self.logger = logging.getLogger("Lucy")
     self.counter, self.lastmsg = 0, 0
+    self.lastquery = {}
     self.mention_lock = Lock()
 
   def is_public_function(self, o):
@@ -122,6 +123,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     message = " ".join(messages).replace(c.get_nickname(), '')
     try:
       query = queries.search(message, self.decay, self.numid, self.ignored)
+      self.lastquery = query
       with self.mention_lock:
         result = self.es.search(query, index=self.index)
       for hit in result["hits"]["hits"]:
