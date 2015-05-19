@@ -84,6 +84,10 @@ def search(message, decay, numid, ignored):
                          "gt": "now-1d"
                        }
                      }
+                   }, {
+                     "prefix": {
+                       "body": "http"
+                     }
                    }]
                  }
                }
