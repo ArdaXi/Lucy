@@ -1,10 +1,12 @@
 import logging
 from datetime import datetime
 from irc.client import MessageTooLong
+from importlib import reload
 
 import external
 import queries
 
+reload(external)
 logger = logging.getLogger(__name__)
 
 def search(parent, c, args):
