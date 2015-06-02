@@ -10,7 +10,7 @@ latest = (datetime.min, 0.0)
 def dollar(key):
   global latest
   old_time, old_euro = latest
-  delta = datetime.utcnow() - time
+  delta = datetime.utcnow() - old_time
   if delta.total_seconds() < 3600:
     return "USD is still worth {} EUR, ask me again later.".format(old_euro)
   response = session.get(URL, params={"app_id": key}).json()
