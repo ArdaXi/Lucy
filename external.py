@@ -17,6 +17,8 @@ def dollar(key):
   time = datetime.utcfromtimestamp(response["timestamp"])
   euro = response["rates"]["EUR"]
   latest = time, euro
+  if old_euro == 0.0:
+    return "USD is currently worth {} EUR".format(euro)
   diff = euro - old_euro
   if diff == 0:
     return "USD is still worth {} EUR, ask me again later.".format(old_euro)
