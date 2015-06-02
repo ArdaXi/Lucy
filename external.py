@@ -25,4 +25,4 @@ def dollar(key):
   verb = "gained" if diff > 0 else "lost"
   perc_diff = abs(diff) / old_euro
   return "USD has {} {:.2%} value since {} and is currently worth {} EUR".format(
-           verb, perc_diff, "some point in time", euro)
+           verb, perc_diff, str(old_time), euro)
