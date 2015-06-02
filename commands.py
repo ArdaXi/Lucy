@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from irc.client import MessageTooLong
 
+import external
 import queries
 
 logger = logging.getLogger(__name__)
@@ -123,6 +124,12 @@ def significant(parent, c, args):
     parent.chan_msg(c, msg)
   except:
     logger.exception("Failed ES")
+
+def dollar(parent, c, args):
+  key = parent.exchange_key
+  time, value = external.dollar(key)
+  msg = "USD is currently worth {} EUR".format(value)
+  parent.chan_msg(c, msg)
 
 def _numid_from_hit(hit):
   return hit["_source"]["numid"]

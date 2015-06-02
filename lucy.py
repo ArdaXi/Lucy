@@ -46,6 +46,7 @@ class Lucy(irc.bot.SingleServerIRCBot):
     irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nick, nick)
     self.connection.buffer_class = IgnoreErrorsBuffer
     self.channel, self.index = config["channel"], config['index']
+    self.exchange_key = config["exchange_key"]
     self.es = pyelasticsearch.ElasticSearch(config['elasticsearch'])
     self.numid = self.es.count("*", index=self.index)['count']
     self.logger = logging.getLogger("Lucy")
