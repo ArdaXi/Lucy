@@ -127,8 +127,7 @@ def significant(parent, c, args):
 
 def dollar(parent, c, args):
   key = parent.exchange_key
-  time, value = external.dollar(key)
-  msg = "USD is currently worth {} EUR".format(value)
+  msg = external.dollar(key)
   parent.chan_msg(c, msg)
 
 def _numid_from_hit(hit):
